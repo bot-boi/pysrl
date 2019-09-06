@@ -1,0 +1,6 @@
+[submodule "take-from/benland100-rsps-macros"]
+	path = take-from/benland100-rsps-macros
+	url = https://github.com/bot-boi/benland100-rsps-macros
+[submodule "take-from/Runetrader"]
+	path = take-from/Runetrader
+	url = https://github.com/frederikgram/Runetrader
