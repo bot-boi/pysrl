@@ -1,33 +1,50 @@
-from mss.linux import MSS as mss
 from threading import Thread, Lock
+from PIL import Image
+from xlib import X
 
+# Capture class, represents constant capture of a window
 class Capture:
     def __init__(self, target):
-        self.window = target # window to capture
-        self.geometry = target.get_geometry()
-        self.mut = Lock()    # mutex
-        self.thread = Thread(target=self.capture_thread)   # capture thread
-        self.kill = False    # used to kill thread
-        self.img0 = None   # latest image from thread
-        self.img1 = None   # temp img variable
+        self.window = target  # window to capture
+        self.mut = Lock()     # mutex TODO: rename to lock with fancy search replace vim functionality
+        self.thread = None    # the capture thread (init w/ self.start())
+        self.kill = False     # used to kill thread capture thread
+        self.img_rgb = None   # rgb version of img
+        self.img_hsl = None   # hsl version of img
 
+    # starts the capture thread
     def start(self):
         self.kill = False
-        self.thread = Thread(target = self.ThreadCapture)
+        self.thread = Thread(target = self.capture_thread)
         self.thread.start()
 
+    # kills the capture thread
     def kill(self):
         self.kill = True
 
+    # thread capture job
+    # TODO: it might make more sense to output arrays of pixels
+    # instead of Image objects
     def capture_thread(self):
-        with mss() as sct: # screen capture tool  ?
-            while not self.kill:
-                raw = self.window.get_image(0, 0, self.geometry.width, self.geometry.height, X.ZPixmap, 0xffffffff)
-                rgb = Image.frombytes("RGB", (self.geometry.height,self.geometry.width), raw.data, "raw", "BGRX")
-                self.img1 = rgb
-                self.mut.acquire()
-                self.img0 = self.img1
-                self.mut.release()
+        while True:
+            if self.kill: # check if killed
+                return 0
+            # get raw img data of window NOTE: these are python xlib calls
+            raw = self.window.get_image(0, 0, self.geometry.width, self.geometry.height, X.ZPixmap, 0xffffffff)
+            # convert raw to RGB Pillow Image
+            rgb = Image.frombytes("RGB", (self.geometry.height,self.geometry.width), raw.data, "raw", "BGRX")
+            # convert RGB image to HSL
+            hsl = rgb_to_hsl(rgb)
+            # output the rgb and hsl images for use
+            self.mut.acquire()
+            self.img_rgb = rgb
+            self.img_hsl = hsl
+            self.mut.release()
 
-    def GetImage(self): # gets the latest image
-        return self.image0
+    # returns latest capture  in rgb and hsl format
+    def get_image(self):
+        self.mut.acquire()                 # TODO: figure out if copy is needed
+        temp_rgb = deep_copy(self.img_rgb) # is deep copy necessary? i think it is, since self.img_rgb &
+        temp_hsl = deep_copy(self.img_hsl) # self.img_hsl are being accessed by another thread constantly
+        self.mut.release()
+        return temp_rgb, temp_hsl
