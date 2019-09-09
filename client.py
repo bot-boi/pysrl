@@ -3,6 +3,8 @@ from enum import Enum
 from ewmh import EWMH
 ewmh = EWMH()
 
+from mss.linux import MSS as mss
+
 # get parent of target client window that is also child
 # of root window (?).  i dont entirely understand how this works
 # but this is how you get a client object with a valid x,y
@@ -19,8 +21,6 @@ def get_frame(client):
     frame = client
     while frame.query_tree().parent != ewmh.root:
         frame = frame.query_tree().parent
-        print(ewmh.getWmName(frame))
-        print(frame.get_geometry())
     return frame
 
 def get_canvas_recursive(client): # unfinished, cant seem to figure this out reeeee
@@ -51,9 +51,10 @@ class CS(Enum): # client state
 
 class Client:
     def __init__(self, window_title):
-        self.window_title=window_title
+        self.window_title = window_title
         self.window = get_window(window_title)
         self.canvas = get_canvas(self.window)
-        self.frame = get_window_frame(client_name)
+        self.frame = get_window_frame(window_title)
+
 
 
