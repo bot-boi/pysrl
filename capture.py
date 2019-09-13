@@ -3,7 +3,6 @@ from PIL import Image
 from Xlib import X, error as Xerror
 from conversions import rgb_to_hsl
 from copy import deepcopy
-from client import get_window, get_canvas
 from enum import Enum
 from ewmh import EWMH
 ewmh = EWMH()
@@ -95,7 +94,7 @@ class Capture:
             self.image = rgb
             self.lock.release()
             # t2 = time.time()
-            print("capture thread ran in {}".format(t2-t1))
+            # print("capture thread ran in {}".format(t2-t1))
 
     # returns latest capture
     def get_image(self):
