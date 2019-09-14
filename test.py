@@ -5,6 +5,8 @@ import numpy as np
 cp = cap.Capture("RuneLite")
 cp.start()
 
+test_img = Image.open("test.jpeg")
+
 class Box:
     def __init__(self, x1,y1,x2,y2):
         self.x1=x1
@@ -19,5 +21,9 @@ class Box:
 def find_colors(img, color, tolerance=0, bounds=Box(0,0,img.width,img.height)):
     arr = np.array(img)
     bounds = b
-    arr = arr[b.y1:b.y2, b.x1:b.x2]
-    return np.argwhere((img < color + tolerance) and (img > color - tolerance))
+    arr = arr[b.y1:b.y2, b.x1:b.x2] # apply bounds
+    arr = arr[(arr > color + tolerance) and (arr < color - tolerance)] = 0
+    points = arr.where((arr > color + tolerance) and (arr < color - tolerance)) # create the mask
+    mask = mask.astype(np.int)
+    colors = mask * arr # apply the mask
+    points = np.where(mask == 1)
