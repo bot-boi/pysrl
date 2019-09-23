@@ -35,10 +35,10 @@ class CTS1:
 def find_colors(img, color, bounds=None):
     arr = np.array(img)
     if bounds == None:
-        bounds = Box(0,0,img.width,img.height)
+        bounds = Box.from_array([0,0,img.width,img.height])
     b = bounds
     arr = arr[b.y1:b.y2, b.x1:b.x2] # apply bounds
     x,y = np.where(np.all(np.logical_and(np.less_equal(arr,color.max), np.greater_equal(arr,color.min)), 2))
     points = np.column_stack((x,y))
-    return PointArray(points)
+    return PointArray.from_array(points)
 

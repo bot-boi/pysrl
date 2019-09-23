@@ -1,4 +1,4 @@
-import capture as cap
+import core.capture as cap
 from PIL import Image
 import numpy as np
 import math
@@ -18,10 +18,10 @@ pa = find_colors(test_img, color)
 draw_pa(test_img,pa).show()
 
 t1 = time.time()
-clusters = pa.cluster(2)
+pa2d = pa.cluster(2)
 print("clustered in", time.time()-t1)
 
 img = test_img.copy()
-for c in clusters:
-    img = draw_pa(img, PointArray(c), np.random.randint(255,size=3,dtype="uint8"))
+for pa in pa2d:
+    img = draw_pa(img, pa, np.random.randint(255,size=3,dtype="uint8"))
 img.show()
