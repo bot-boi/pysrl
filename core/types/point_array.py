@@ -6,21 +6,7 @@ from core.types.point import Point
 
 # point array class -- defines array of points and operations upon them
 # underlying data is an array of Point
-class PointArray():
-    def __init__(self, points):
-        self.points = points
-
-    def __delitem__(self, key): # allow indexing like an array
-        self.points = np.delete(self.points, key, 0)
-
-    def __getitem__(self, key):  # allow indexing like an array
-        return self.points[key]
-
-    def __setitem__(self, key, value): # allow indexing like an array
-        self.points[key] = value
-
-    def __len__(self):
-        return len(self.points)
+class PointArray(list):
 
     @classmethod # alternate constructor -- accepts numpy array w/format [[x,y]]
     def from_array(class_object, arr):
@@ -29,11 +15,8 @@ class PointArray():
             points.append(Point.from_array(p))
         return class_object(points)
 
-    def append(self, point): # appends a Point to self.points
-        self.points.append(point)
-
     def as_array(self): # returns points as numpy array -- [[x,y]]
-        return np.array([[p.x,p.y] for p in self.points])
+        return np.array([[p.x,p.y] for p in self])
 
     def cluster(self, max_dist, min_samples=4, n_jobs=8): # cluster points using DBSCAN algorithm
         raw_points = self.as_array()
