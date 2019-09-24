@@ -10,7 +10,8 @@ class PointArray2D(list):
             if len(pa) < min or len(pa) > M:
                 del self.clusters[i]
 
-    # def sort_by_middle(self, middle): # sort clusters by middle -- inplace
-
-
+    def sort_by_middle(self, middle): # sort clusters by middle -- inplace
+        points = [pa.get_middle() for pa in self] # get middle points of each tpa
+        # sort by distance between midpoint of each point array and middle
+        self.sort(key=lambda pa: pa.get_middle().distance_from(middle))
 

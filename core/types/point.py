@@ -10,5 +10,17 @@ class Point():
     def from_array(class_object, arr):
         return class_object(arr[0], arr[1])
 
-    def distance_from(other): # get distance from another point
+    def __add__(self, other):
+        return Point(self.x+other.x, self.y+other.y)
+
+    def __sub__(self, other):
+        return Point(self.x-other.x, self.y-other.y)
+
+    def __mul__(self, other):
+        return Point(self.x*other.x, self.y*other.y)
+
+    def __floordiv__(self, other):
+        return Point(self.x//other.x, self.y//other.y)
+
+    def distance_from(self, other): # get distance from another point
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)

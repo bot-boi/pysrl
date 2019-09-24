@@ -16,7 +16,7 @@ class PointArray(list):
         return class_object(points)
 
     def as_array(self): # returns points as numpy array -- [[x,y]]
-        return np.array([[p.x,p.y] for p in self])
+        return np.array([[p.x,p.y] for p in self], dtype="uint32")
 
     def cluster(self, max_dist, min_samples=4, n_jobs=8): # cluster points using DBSCAN algorithm
         raw_points = self.as_array()
@@ -28,3 +28,11 @@ class PointArray(list):
             cluster = raw_points[labels == label]
             clusters.append(PointArray.from_array(cluster))
         return PointArray2D(clusters)
+
+    def get_middle(self):  # get mean average point
+        total = Point(0,0)
+        for p in self:
+           total += p
+        length = len(self)
+        divisor = Point(length, length)
+        return total // divisor
