@@ -12,7 +12,7 @@ class RGBCube:
 
     @classmethod # accepts array of CTS1 colors
     def from_colors(class_object, colors):
-        res = class_object(CTS1(255,255,255), CTS1(0,0,0))# result
+        res = class_object(CTS1([255,255,255],0), CTS1([0,0,0],0))# result
         for c in colors:
             if c.r > res.c2.r: res.c2.r = c.r
             if c.r < res.c1.r: res.c1.r = c.r
@@ -22,6 +22,7 @@ class RGBCube:
             if c.b < res.c1.b: res.c1.b = c.b
         return res
 
+# TODO: rework color tolerances
 # accepts [r,g,b] array and tolerance
 # alternate constructor sigs: r, g, b, tol OR color-number, tol
 class CTS1:
@@ -31,6 +32,9 @@ class CTS1:
             if v > 255: color[i]=255
             if v < 0: color[i]=0
         self.color=np.array(color,"uint8")
+        self.r = color[0]
+        self.b = color[1]
+        self.g = color[2]
         self.tol=tol
         m = [] # min
         M = [] # max
@@ -55,6 +59,7 @@ class CTS1:
         g = (cube.c1.g + cube.c2.g) // 2
         b = (cube.c1.b + cube.c2.b) // 2
         tol = math.ceil(math.sqrt((r-cube.c1.r)**2 + (g-cube.c1.g)**2 + (b-cube.c1.b)**2))
+        return class_object([r,g,b],tol)
 
 # returns points of a PIL Image that're within color +/- tolerance & bounds
 # color is the CTS1 class
