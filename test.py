@@ -4,7 +4,8 @@ import numpy as np
 import math
 from sklearn.cluster import DBSCAN
 
-from core.color import CTS1, find_colors
+from core.color import find_colors
+from core.types.cts import CTS1, CTS2
 from core.debug import draw_pa
 from core.types.point_array import PointArray
 import time

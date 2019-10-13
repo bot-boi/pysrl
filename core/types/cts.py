@@ -40,8 +40,8 @@ class CTS1:
             if v < 0: color[i]=0
         self.color=np.array(color,"uint8")
         self.r = color[0]
-        self.b = color[1]
-        self.g = color[2]
+        self.g = color[1]
+        self.b = color[2]
         self.tol=tol
         m = [] # min
         M = [] # max
@@ -93,8 +93,8 @@ class CTS2:
             if v < 0: color[i]=0
         self.color=np.array(color,"uint8")
         self.r = color[0]
-        self.b = color[1]
-        self.g = color[2]
+        self.g = color[1]
+        self.b = color[2]
         self.rtol=rtol
         self.gtol=gtol
         self.btol=btol

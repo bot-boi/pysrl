@@ -7,7 +7,8 @@ import numpy as np
 import sys
 
 sys.path.append('/home/not-here/Projects/py-srl/')
-from core.color import CTS1, find_colors
+from core.color import find_colors
+from core.types.cts import CTS1, CTS2
 from core.debug import draw_pa2d
 
 def capture_screen():
@@ -30,7 +31,7 @@ class ListenInterrupt(Exception):
     pass
 
 class ACA(PyMouseEvent):
-    def __init__(self, mode='CTS1'):
+    def __init__(self, mode='CTS2'):
         PyMouseEvent.__init__(self)
         self.quit = False
         self.mode=mode
@@ -46,7 +47,7 @@ class ACA(PyMouseEvent):
     def _get_user_input(self):
         cmd = input("What would you like to do?\n")
         if cmd == "help":
-            print("select-color or sc, undo or u, clear or c, result or r, show or s, quit or q, help")
+            print("select-color or sc, undo or u, clear or c, mode or m, result or r, show or s, quit or q, help")
         elif cmd == "select-color" or cmd == "sc":
             print("use right click to exit")
             try:
@@ -58,14 +59,25 @@ class ACA(PyMouseEvent):
             del self.colors[-1]
         elif cmd == "clear" or cmd == "c":
             self.colors = []
+        elif cmd == "mode" or cmd == "m":
+            self.mode = input("Enter mode (CTS1, CTS2)")
         elif cmd == "result" or cmd == "r":
-            res = CTS1.from_colors(self.colors)
-            print(res.color, res.tol)
+            res = None
+            if self.mode == "CTS1":
+                res = CTS1.from_colors(self.colors)
+                print(res.color, res.tol)
+            elif self.mode == "CTS2":
+                res = CTS2.from_colors(self.colors)
+                print(res.color, res.rtol, res.btol, res.gtol)
         elif cmd == "show" or cmd == "s":
-            color = CTS1.from_colors(self.colors)
+            color = None
+            if self.mode == "CTS1":
+                color = CTS1.from_colors(self.colors)
+            elif self.mode == "CTS2":
+                color = CTS2.from_colors(self.colors)
             img = self._capture_screen()
             pa = find_colors(img, color)
-            draw_pa2d(img, pa.cluster(3)).show()
+            draw_pa2d(img, pa.cluster(5)).show()
         elif cmd == "quit" or cmd == "q":
             self.quit = True
     def my_run(self): # run is already defined in PyMouseEvent
