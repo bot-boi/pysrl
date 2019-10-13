@@ -3,6 +3,7 @@ from core.types.point import Point
 class Box:
     # accepts 2 Points
     def __init__(self, top_left, bot_right):
+        # type: (Point, Point) -> None
         self.top_left = top_left  # top left corner
         self.bot_right = bot_right # bot right corner
         self.x1=top_left.x
