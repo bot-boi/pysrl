@@ -5,38 +5,42 @@ from PIL import Image
 from pymouse import PyMouseEvent
 import numpy as np
 import sys
-
-sys.path.append('/home/not-here/Projects/py-srl/')
 from core.color import find_colors
 from core.types.cts import CTS1, CTS2
 from core.debug import draw_pa2d
+sys.path.append('/home/not-here/Projects/py-srl/')
+
 
 def capture_screen():
     dsp = display.Display()
     root = dsp.screen().root
-    g = root.get_geometry() # geometry
+    g = root.get_geometry()  # geometry
     raw = root.get_image(0, 0, g.width, g.height, X.ZPixmap, 0xffffffff)
     image = Image.frombytes("RGB", (g.width, g.height), raw.data, "raw", "BGRX")
     return image
 
+
 class _MouseHandler(PyMouseEvent):
     events = []
+
     def __init__(self):
         PyMouseEvent.__init__(self)
 
     def click(self, x, y, button, press):
-        events.append((x,y,button,press))
+        self.events.append((x, y, button, press))
+
 
 class ListenInterrupt(Exception):
     pass
+
 
 class ACA(PyMouseEvent):
     def __init__(self, mode='CTS2'):
         PyMouseEvent.__init__(self)
         self.quit = False
-        self.mode=mode
+        self.mode = mode
         self.colors = []
-        self.root = display.Display().screen().root # get root window
+        self.root = display.Display().screen().root  # get root window
 
     def _capture_screen(self):
         g = self.root.get_geometry()
@@ -80,7 +84,8 @@ class ACA(PyMouseEvent):
             draw_pa2d(img, pa.cluster(5)).show()
         elif cmd == "quit" or cmd == "q":
             self.quit = True
-    def my_run(self): # run is already defined in PyMouseEvent
+
+    def my_run(self):  # run is already defined in PyMouseEvent
         # TODO: have separate class for mouse events
         while not self.quit:
             self._get_user_input()
@@ -89,13 +94,13 @@ class ACA(PyMouseEvent):
     def click(self, x, y, button, press):
         if button == 1:
             if press:
-                rgb = np.array(self._capture_screen(),dtype="uint64")[y][x]
+                rgb = np.array(self._capture_screen(), dtype="uint64")[y][x]
                 print(rgb)
                 self.colors.append(CTS1(rgb, 0))
         elif button == 2:
             raise ListenInterrupt("Exiting click mode")
 
+
 if __name__ == "__main__":
     aca = ACA()
     aca.my_run()
-

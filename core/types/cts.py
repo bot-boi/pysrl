@@ -2,8 +2,7 @@
 # color finders and color tolerance speed definitions
 import numpy as np
 import math
-from core.types.point_array import PointArray
-from core.types.box import Box
+
 
 # 3d color range for CTS1 color picking
 class RGBCube:
@@ -11,17 +10,25 @@ class RGBCube:
         self.c1 = color1
         self.c2 = color2
 
-    @classmethod # accepts array of CTS1 colors
+    @classmethod  # accepts array of CTS1 colors
     def from_colors(class_object, colors):
-        res = class_object(CTS1([255,255,255],0), CTS1([0,0,0],0))# result
+        # result
+        res = class_object(CTS1([255, 255, 255], 0), CTS1([0, 0, 0], 0))
         for c in colors:
-            if c.r > res.c2.r: res.c2.r = c.r
-            if c.r < res.c1.r: res.c1.r = c.r
-            if c.g > res.c2.g: res.c2.g = c.g
-            if c.g < res.c1.g: res.c1.g = c.g
-            if c.b > res.c2.b: res.c2.b = c.b
-            if c.b < res.c1.b: res.c1.b = c.b
+            if c.r > res.c2.r:
+                res.c2.r = c.r
+            if c.r < res.c1.r:
+                res.c1.r = c.r
+            if c.g > res.c2.g:
+                res.c2.g = c.g
+            if c.g < res.c1.g:
+                res.c1.g = c.g
+            if c.b > res.c2.b:
+                res.c2.b = c.b
+            if c.b < res.c1.b:
+                res.c1.b = c.b
         return res
+
 
 # TODO: rework color tolerances
 # accepts [r,g,b] array and tolerance
@@ -35,31 +42,33 @@ class CTS1:
         tol   -- the tolerance for all the color channels
         """
         for i in range(len(color)):
-            v = color[i] # value
-            if v > 255: color[i]=255
-            if v < 0: color[i]=0
-        self.color=np.array(color,"uint8")
+            v = color[i]  # value
+            if v > 255:
+                color[i] = 255
+            if v < 0:
+                color[i] = 0
+        self.color = np.array(color, "uint8")
         self.r = color[0]
         self.g = color[1]
         self.b = color[2]
-        self.tol=tol
-        m = [] # min
-        M = [] # max
+        self.tol = tol
+        m = []  # min
+        M = []  # max
         # handle overflow/underflow
-        for i in range(len(self.color)): # there has to be a more elegant way to do this
+        for i in range(len(self.color)):  # there has to be a more elegant way to do this
             v = self.color[i]
             if v+tol > 255:
                 M.append(255)
             else:
-                M.append(v+tol)
+                M.append(v + tol)
             if v-tol < 0:
                 m.append(0)
             else:
-                m.append(v-tol)
+                m.append(v - tol)
         self.min = np.array(m, "uint8")
         self.max = np.array(M, "uint8")
 
-    @classmethod # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
+    @classmethod  # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
     def from_colors(class_object, colors):
         """Initialize a CTS1 color that contains the colors provided
 
@@ -71,7 +80,8 @@ class CTS1:
         g = (cube.c1.g + cube.c2.g) // 2
         b = (cube.c1.b + cube.c2.b) // 2
         tol = math.ceil(math.sqrt((r-cube.c1.r)**2 + (g-cube.c1.g)**2 + (b-cube.c1.b)**2))
-        return class_object([r,g,b],tol)
+        return class_object([r, g, b], tol)
+
 
 # CTS1 but with a tolerance for each color channel instead of just one
 # could use HSL instead of rgb here, but IMO not worth the effort
@@ -88,21 +98,23 @@ class CTS2:
         """
 
         for i in range(len(color)):
-            v = color[i] # value
-            if v > 255: color[i]=255
-            if v < 0: color[i]=0
-        self.color=np.array(color,"uint8")
+            v = color[i]  # value
+            if v > 255:
+                color[i] = 255
+            if v < 0:
+                color[i] = 0
+        self.color = np.array(color, "uint8")
         self.r = color[0]
         self.g = color[1]
         self.b = color[2]
-        self.rtol=rtol
-        self.gtol=gtol
-        self.btol=btol
+        self.rtol = rtol
+        self.gtol = gtol
+        self.btol = btol
 
-        m = [] # min color
-        M = [] # max color
+        m = []  # min color
+        M = []  # max color
         # handle over and underflow
-        if self.r+self.rtol > 255: # calc red range
+        if self.r+self.rtol > 255:  # calc red range
             M.append(255)
         else:
             M.append(self.r+self.rtol)
@@ -111,7 +123,7 @@ class CTS2:
         else:
             m.append(self.r-self.rtol)
 
-        if self.g+self.gtol > 255: # calc green range
+        if self.g+self.gtol > 255:  # calc green range
             M.append(255)
         else:
             M.append(self.g+self.gtol)
@@ -120,7 +132,7 @@ class CTS2:
         else:
             m.append(self.g-self.gtol)
 
-        if self.b+self.btol > 255: # calc blue range
+        if self.b+self.btol > 255:  # calc blue range
             M.append(255)
         else:
             M.append(self.b+self.btol)
@@ -129,10 +141,10 @@ class CTS2:
         else:
             m.append(self.b-self.btol)
 
-        self.min = np.array(m, "uint8") # the min color according to tolerance
-        self.max = np.array(M, "uint8") # the max color according to tolerance
+        self.min = np.array(m, "uint8")  # the min color according to tolerance
+        self.max = np.array(M, "uint8")  # the max color according to tolerance
 
-    @classmethod # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
+    @classmethod  # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
     def from_colors(class_object, colors):
         """Initialize a CTS2 color that contains the colors provided
 
@@ -146,4 +158,4 @@ class CTS2:
         rtol = r - cube.c1.r
         gtol = g - cube.c1.g
         btol = b - cube.c1.b
-        return class_object([r,g,b], rtol, gtol, btol)
+        return class_object([r, g, b], rtol, gtol, btol)

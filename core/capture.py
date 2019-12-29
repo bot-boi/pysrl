@@ -1,20 +1,20 @@
 from threading import Thread, Lock
 from PIL import Image
 from Xlib import X, error as Xerror
-from conversions import rgb_to_hsl
-from copy import deepcopy
 from ewmh import EWMH
+# import time
 ewmh = EWMH()
-import time
+
 
 # stuff for getting client xwindow
 # get xwindow object
-def get_window(title):
-    title = title.encode() # needs to be byte
+def get_window(title: str):
+    title = title.encode()  # needs to be byte
     clients = ewmh.getClientList()
     for client in clients:
         if title in ewmh.getWmName(client):
             return client
+
 
 # get frame of an xwindow object
 # works for runelite, unsure for other apps
@@ -25,32 +25,25 @@ def get_frame(client):
     return frame
 
 
-def get_canvas_recursive(client): # unfinished, cant seem to figure this out reeeee
-    canvas_name = "sun-awt-X11-XCanvasPeer".encode()
-    result = None
-    for child in client.query_tree().children:
-        if ewmh.getWmName(child) == canvas_name:
-            result = child
-            break
-        get_canvas_recursive(child)
-
 # get runelite canvas
-def get_canvas(client): # search osrs client children for canvas
-    canvas_name = "sun-awt-X11-XCanvasPeer".encode() # TODO: use recursion
-    for child in client.query_tree().children:  # tested for runelite only
+def get_canvas(client):  # search osrs client children for canvas
+    canvas_name = "sun-awt-X11-XCanvasPeer".encode()  # TODO: use recursion
+    for child in client.query_tree().children:   # tested for runelite only
         for child1 in child.query_tree().children:
             for child2 in child1.query_tree().children:
                 if ewmh.getWmName(child2) == canvas_name:
                     return child2
 
+
 # get frame of an xwindow, accepts name of window
-def get_window_frame(title):
+def get_window_frame(title: str):
     return get_frame(get_window(title))
+
 
 # Capture class, represents constant capture of a window
 # init with Capture(ClientWindow("RuneLite"))
 class Capture:
-    def __init__(self, window_title):
+    def __init__(self, window_title: str):
         self.window = get_window(window_title)
         self.target = get_canvas(self.window)
         self.lock = Lock()    # mutex lock thing
@@ -61,7 +54,7 @@ class Capture:
     # starts the capture thread
     def start(self):
         self.kill = False
-        self.thread = Thread(target = self.capture_thread)
+        self.thread = Thread(target=self.capture_thread)
         self.thread.start()
 
     # terminates the capture thread
@@ -74,7 +67,7 @@ class Capture:
     def capture_thread(self):
         while True:
             # t1 = time.time()
-            if self.kill: # check if killed
+            if self.kill:  # check if killed
                 return 0
 
             # get the shape of the window and reload canvas if it fails
@@ -93,10 +86,10 @@ class Capture:
             self.image = rgb
             self.lock.release()
             # t2 = time.time()
-            print("capture thread ran in {}".format(t2-t1))
+            # print("capture thread ran in {}".format(t2-t1))
 
     # returns latest capture
-    def get_image(self):
+    def get_image(self) -> Image:
         self.lock.acquire()
         img = self.image    # is a deep copy necessary?
         self.lock.release()
