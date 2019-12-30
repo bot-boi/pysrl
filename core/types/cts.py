@@ -2,6 +2,7 @@
 # color finders and color tolerance speed definitions
 import numpy as np
 import math
+from typing import List
 
 
 # 3d color range for CTS1 color picking
@@ -30,7 +31,6 @@ class RGBCube:
         return res
 
 
-# TODO: rework color tolerances
 # accepts [r,g,b] array and tolerance
 # alternate constructor sigs: r, g, b, tol OR color-number, tol
 class CTS1:
@@ -143,6 +143,12 @@ class CTS2:
 
         self.min = np.array(m, "uint8")  # the min color according to tolerance
         self.max = np.array(M, "uint8")  # the max color according to tolerance
+
+    def asarray(self) -> List:
+        return [self.r, self.g, self.b, self.rtol, self.gtol, self.btol]
+
+    def __str__(self) -> str:
+        return str(self.asarray())
 
     @classmethod  # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
     def from_colors(class_object, colors):

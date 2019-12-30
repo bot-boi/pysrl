@@ -13,13 +13,13 @@ import time
 # cp = cap.Capture("RuneLite")
 # cp.start()
 
-test_img = Image.open("test.jpeg")
-color = CTS1([10, 30, 70], 50)
+test_img = Image.open("term.png")
+color = CTS1([85, 252, 75], 50)
 pa = find_colors(test_img, color)
 draw_pa(test_img,pa).show()
 
 t1 = time.time()
-pa2d = pa.cluster(2)
+pa2d = pa.cluster(3)
 print("clustered in", time.time()-t1)
 
 img = test_img.copy()
