@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from core.types.point_array2d import PointArray2D
 from core.types.point import Point
+from core.types.box import Box
 
 
 # point array class -- defines array of points and operations upon them
@@ -19,6 +20,9 @@ class PointArray(list):
     def as_array(self):  # returns points as numpy array -- [[x,y]]
         return np.array([[p.x, p.y] for p in self], dtype="uint32")
 
+    def bounds(self) -> Box:  # return a box that contains all points in self
+        return Box(self[0], self[-1])
+
     def cluster(self, max_dist, min_samples=4, n_jobs=8):  # cluster points using DBSCAN algorithm
         raw_points = self.as_array()
         db = DBSCAN(max_dist, min_samples, n_jobs=n_jobs).fit(raw_points)
@@ -30,7 +34,7 @@ class PointArray(list):
             clusters.append(PointArray.from_array(cluster))
         return PointArray2D(clusters)
 
-    def get_middle(self):  # get mean average point
+    def middle(self):  # get mean average point
         total = Point(0, 0)
         for p in self:
             total += p

@@ -1,18 +1,17 @@
 from threading import Thread, Lock
 from PIL import Image
 from Xlib import X, error as Xerror
+import time
 from ewmh import EWMH
-# import time
 ewmh = EWMH()
 
 
 # stuff for getting client xwindow
 # get xwindow object
 def get_window(title: str):
-    title = title.encode()  # needs to be byte
     clients = ewmh.getClientList()
     for client in clients:
-        if title in ewmh.getWmName(client):
+        if title == ewmh.getWmName(client):
             return client
 
 
@@ -27,7 +26,7 @@ def get_frame(client):
 
 # get runelite canvas
 def get_canvas(client):  # search osrs client children for canvas
-    canvas_name = "sun-awt-X11-XCanvasPeer".encode()  # TODO: use recursion
+    canvas_name = "sun-awt-X11-XCanvasPeer"  # TODO: use recursion
     for child in client.query_tree().children:   # tested for runelite only
         for child1 in child.query_tree().children:
             for child2 in child1.query_tree().children:
@@ -49,7 +48,7 @@ class Capture:
         self.lock = Lock()    # mutex lock thing
         self.thread = None    # the capture thread (init w/ self.start())
         self.kill = False     # used to kill thread capture thread
-        self.image = None     # PIL Image
+        self.image = None  # Image.new('RGB', (2000, 2000))     # PIL Image
 
     # starts the capture thread
     def start(self):
@@ -74,23 +73,31 @@ class Capture:
             # canvas id changes on resize, other events cause this too ?
             try:
                 g = self.target.get_geometry()
-            except Xerror.BadDrawable:
+            except Xerror.BadDrawable or Xerror.BadMatch:
+                print("bad drawable")
                 self.target = get_canvas(self.window)
                 g = self.target.get_geometry()
             # get raw img data of window NOTE: these are python xlib calls
             raw = self.target.get_image(0, 0, g.width, g.height, X.ZPixmap, 0xffffffff)
             # convert raw to RGB Pillow Image
-            rgb = Image.frombytes("RGB", (g.width, g.height), raw.data, "raw", "BGRX")
-            # output image
-            self.lock.acquire()
-            self.image = rgb
-            self.lock.release()
-            # t2 = time.time()
-            # print("capture thread ran in {}".format(t2-t1))
+            if type(raw.data) == str:
+                # this means window is minimized or completely covered (not being rendered)
+                print('Target window is minimized or covered, slowing capture to once every 10 seconds', flush=True)
+                time.sleep(10)
+            else:
+                rgb = Image.frombytes("RGB", (g.width, g.height), raw.data, "raw", "BGRX")
+                if rgb is None:
+                    print('img grab failed')
+                # output image
+                self.lock.acquire()
+                self.image = rgb.copy()
+                self.lock.release()
+                # t2 = time.time()
+                # print("capture thread ran in {}".format(t2-t1))
 
     # returns latest capture
     def get_image(self) -> Image:
         self.lock.acquire()
-        img = self.image    # is a deep copy necessary?
+        img = self.image.copy()    # is a deep copy necessary?
         self.lock.release()
         return img

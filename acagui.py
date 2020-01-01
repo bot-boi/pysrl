@@ -4,6 +4,7 @@ import pyautogui
 import io
 import time
 import pyperclip
+from ast import literal_eval
 from core.types.cts import CTS2
 from core.color import find_colors
 from core.debug import draw_pa2d
@@ -25,8 +26,13 @@ colors_menu = [[], ['Delete::colorlist']]
 colors_elem = sg.Listbox(key="colorlist", select_mode=colors_mode,
                          size=(18, 18), values=[], right_click_menu=colors_menu)
 interface = sg.Column([[sg.Button("Capture"), sg.Exit()], [sg.Button("Draw"), sg.Button("Erase")],
-                       [sg.Button("Copy to Clipboard")], [sg.Text("Cluster:"), sg.In('5', key='cluster', size=(5, 1))],
-                       [colors_elem]])
+                       [sg.Button("Copy Best Color")],
+                       [sg.Button("Copy Finder Function")],
+                       [sg.Text("Cluster:"), sg.In('5', key='cluster', size=(5, 1))],
+                       [sg.Text("Filter (min, max):")],
+                       [sg.In('100, 1000', key='filter', size=(15, 1))],
+                       [colors_elem],
+                       [sg.Text("Found in:"), sg.Text("", key="foundin", size=(20, 2))]])
 img_elem = sg.Graph(key="imgview", enable_events=True, graph_top_right=(2000, 0),
                     graph_bottom_left=(0, 2000), canvas_size=(2000, 2000))
 
@@ -52,10 +58,22 @@ while True:
         color = CTS2(current_img.getpixel(pos), 0, 0, 0)
         colors.append(color)
         colors_elem.update(values=[c.asarray()[:3] for c in colors])
-    elif event == 'Copy to Clipboard':
+    elif event == 'Copy Best Color':
         if len(colors) > 0:
-            result = CTS2.from_colors(colors)
-            pyperclip.copy(str(result))
+            r = CTS2.from_colors(colors)
+            resultstr = 'CTS2({}, {}, {}, {}, {}, {})'.format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
+            pyperclip.copy(resultstr)
+    elif event == 'Copy Finder Function':
+        if len(colors) > 0:
+            r = CTS2.from_colors(colors)
+            result = 'def finder(img) -> PointArray2D:\n'
+            result += '\tcolor = CTS2({}, {}, {}, {}, {}, {})\n'.format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
+            result += '\tpoints = find_colors(img, color)\n'
+            result += '\tpa2d = points.cluster({})\n'.format(int(window.Element('cluster').get()))
+            mf, Mf = literal_eval(window.Element('filter').get())
+            result += '\tpa2d.filtersize({}, {})\n'.format(mf, Mf)
+            result += '\treturn pa2d\n'
+            pyperclip.copy(result)
     elif event == 'Delete::colorlist':
         # TODO: delete single entries instead of all matching values
         delcolors = values['colorlist']  # colors to delete
@@ -82,11 +100,17 @@ while True:
     if drawflag:
         # this cant be done in the event handling idk why, hence the flag
         cluster = int(window.Element('cluster').get())
+        mf, Mf = literal_eval(window.Element('filter').get())
         e = window.Element("imgview")
         e.erase()
         color = CTS2.from_colors(colors)
+        t1 = time.time()
         pa = find_colors(current_img, color)
         pa2d = pa.cluster(cluster)
+        pa2d.filtersize(mf, Mf)
+        t2 = time.time()
+        foundin = window.Element('foundin')
+        foundin.update(value=(t2-t1))
         drawn_img = draw_pa2d(current_img, pa2d)
         img_str = bufferimage(drawn_img)
         e.DrawImage(data=img_str, location=(0, 0))
