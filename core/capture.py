@@ -6,6 +6,15 @@ from ewmh import EWMH
 ewmh = EWMH()
 
 
+# check if window exists, only used in tests
+def is_window(title: str) -> bool:
+    clients = ewmh.getClientList()
+    for client in clients:
+        if title == ewmh.getWmName(client):
+            return True
+    return False
+
+
 # stuff for getting client xwindow
 # get xwindow object
 def get_window(title: str):
@@ -78,14 +87,17 @@ class Capture:
                 self.target = get_canvas(self.window)
                 g = self.target.get_geometry()
             # get raw img data of window NOTE: these are python xlib calls
-            raw = self.target.get_image(0, 0, g.width, g.height, X.ZPixmap, 0xffffffff)
+            raw = self.target.get_image(0, 0, g.width, g.height, X.ZPixmap,
+                                        0xffffffff)
             # convert raw to RGB Pillow Image
             if type(raw.data) == str:
-                # this means window is minimized or completely covered (not being rendered)
-                print('Target window is minimized or covered, slowing capture to once every 10 seconds', flush=True)
+                # this means window is minimized or covered (not rendering)
+                print('Window hidden, slowing capture to every 10 seconds',
+                      flush=True)
                 time.sleep(10)
             else:
-                rgb = Image.frombytes("RGB", (g.width, g.height), raw.data, "raw", "BGRX")
+                rgb = Image.frombytes("RGB", (g.width, g.height), raw.data,
+                                      "raw", "BGRX")
                 if rgb is None:
                     print('img grab failed')
                 # output image
