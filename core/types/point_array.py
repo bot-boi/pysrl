@@ -1,6 +1,7 @@
 # array of points -- equivalent to SRL's TPointArray
 import numpy as np
-from sklearn.cluster import DBSCAN
+import hdbscan
+from typing import List
 from core.types.point_array2d import PointArray2D
 from core.types.point import Point
 from core.types.box import Box
@@ -9,9 +10,9 @@ import time
 
 # point array class -- defines array of points and operations upon them
 # underlying data is an array of Point
-class PointArray(list):
+class PointArray(List):
 
-    @classmethod  # alternate constructor -- accepts numpy array w/format [[x,y]]
+    @classmethod  # alternate constructor, accepts numpy array w/format [[x,y]]
     def from_array(class_object, arr):
         points = []
         for p in arr:
@@ -24,9 +25,10 @@ class PointArray(list):
     def bounds(self) -> Box:  # return a box that contains all points in self
         return Box(self[0], self[-1])
 
-    def cluster(self, max_dist, min_samples=4, n_jobs=-1):  # cluster points using DBSCAN algorithm
+    # cluster points using DBSCAN algorithm
+    def cluster(self, maxd, min_samples=4, n_jobs=-1):
         raw_points = self.as_array()
-        db = DBSCAN(max_dist, min_samples, n_jobs=n_jobs).fit(raw_points)
+        db = hdbscan.HDBSCAN(maxd, min_samples, core_dist_n_jobs=n_jobs).fit(raw_points)
         labels = db.labels_
         clusters = []
         max_label = labels.max()
