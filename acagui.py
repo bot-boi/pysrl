@@ -24,15 +24,15 @@ def screencapture():
 colors_mode = sg.LISTBOX_SELECT_MODE_MULTIPLE
 colors_menu = [[], ['Delete::colorlist']]
 colors_elem = sg.Listbox(key="colorlist", select_mode=colors_mode,
-                         size=(18, 18), values=[], right_click_menu=colors_menu)
-interface = sg.Column([[sg.Button("Capture"), sg.Exit()], [sg.Button("Draw"), sg.Button("Erase")],
-                       [sg.Button("Copy Best Color")],
-                       [sg.Button("Copy Finder Function")],
+                         size=(20, 15), values=[], right_click_menu=colors_menu)
+interface = sg.Column([[sg.Button("Capture"), sg.Exit()],
+                       [sg.Button("Draw"), sg.Button("Erase")],
+                       [sg.Button("Code"), sg.Button("Color")],
                        [sg.Text("Cluster:"), sg.In('5', key='cluster', size=(5, 1))],
                        [sg.Text("Filter (min, max):")],
                        [sg.In('100, 1000', key='filter', size=(15, 1))],
                        [colors_elem],
-                       [sg.Text("Found in:"), sg.Text("", key="foundin", size=(20, 2))]])
+                       [sg.Text("", key="foundin", size=(20, 12))]])
 img_elem = sg.Graph(key="imgview", enable_events=True, graph_top_right=(2000, 0),
                     graph_bottom_left=(0, 2000), canvas_size=(2000, 2000))
 
@@ -58,12 +58,12 @@ while True:
         color = CTS2(current_img.getpixel(pos), 0, 0, 0)
         colors.append(color)
         colors_elem.update(values=[c.asarray()[:3] for c in colors])
-    elif event == 'Copy Best Color':
+    elif event == 'Color':
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             resultstr = 'CTS2({}, {}, {}, {}, {}, {})'.format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
             pyperclip.copy(resultstr)
-    elif event == 'Copy Finder Function':
+    elif event == 'Code':
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             result = 'def finder(img) -> PointArray2D:\n'
@@ -103,14 +103,22 @@ while True:
         mf, Mf = literal_eval(window.Element('filter').get())
         e = window.Element("imgview")
         e.erase()
-        color = CTS2.from_colors(colors)
         t1 = time.time()
-        pa = find_colors(current_img, color)
-        pa2d = pa.cluster(cluster)
-        pa2d.filtersize(mf, Mf)
+        color = CTS2.from_colors(colors)
         t2 = time.time()
+        pa = find_colors(current_img, color)
+        t3 = time.time()
+        pa2d = pa.cluster(cluster)
+        t4 = time.time()
+        pa2d.filtersize(mf, Mf)
+        t5 = time.time()
+        tstr = 'CTS2 creation: {}\n'.format(str(t2 - t1))
+        tstr += 'color finding: {}\n'.format(str(t3 - t2))
+        tstr += 'cluster: {}\n'.format(str(t4 - t3))
+        tstr += 'filter: {}\n'.format(str(t5 - t4))
+        tstr += 'total (w/out CTS2): {}'.format(str(t5 - t2))
         foundin = window.Element('foundin')
-        foundin.update(value=(t2-t1))
+        foundin.update(value=tstr)
         drawn_img = draw_pa2d(current_img, pa2d)
         img_str = bufferimage(drawn_img)
         e.DrawImage(data=img_str, location=(0, 0))
