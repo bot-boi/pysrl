@@ -4,6 +4,7 @@ import pyautogui
 import io
 import time
 import pyperclip
+import numpy as np
 from ast import literal_eval
 from core.types.cts import CTS2
 from core.color import find_colors
@@ -55,7 +56,8 @@ while True:
         captureflag = True
     elif event == 'imgview':
         pos = values['imgview']
-        color = CTS2(current_img.getpixel(pos), 0, 0, 0)
+        x, y = pos
+        color = CTS2(current_img[y][x], 0, 0, 0)
         colors.append(color)
         colors_elem.update(values=[c.asarray()[:3] for c in colors])
     elif event == 'Copy Best Color':
@@ -94,7 +96,7 @@ while True:
         time.sleep(0.5)
         img_str, img = screencapture()
         window.normal()
-        current_img = img
+        current_img = np.array(img)
         e.DrawImage(data=img_str, location=(0, 0))
 
     if drawflag:
