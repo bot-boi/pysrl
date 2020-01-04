@@ -3,6 +3,7 @@ import numpy as np
 import hdbscan
 from core.types.point import Point
 from core.types.box import Box
+import time
 
 
 # check if point array

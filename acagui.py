@@ -25,22 +25,23 @@ def screencapture():
 
 
 colors_mode = sg.LISTBOX_SELECT_MODE_MULTIPLE
-colors_menu = [[], ['Delete::colorlist']]
+color_menu = [[], ['Delete::colorlist']]
 colors_elem = sg.Listbox(key="colorlist", select_mode=colors_mode,
-                         size=(18, 18), values=[], right_click_menu=colors_menu)
+                         size=(18, 18), values=[], right_click_menu=color_menu)
 interface = \
     sg.Column([[sg.Button("Capture"), sg.Exit()],
                [sg.Button("Draw"), sg.Button("Erase")],
-               [sg.Button("Copy Best Color")],
-               [sg.Button("Copy Finder Function")],
+               [sg.Button("Code"), sg.Button("Color")],
                [sg.Text("Filter (min, max):")],
                [sg.In('100, 1000', key='filter', size=(15, 1))],
                [colors_elem],
-               [sg.Text("", key="foundin", size=(20, 10))]])
-img_elem = sg.Graph(key="imgview", enable_events=True, graph_top_right=(2000, 0),
-                    graph_bottom_left=(0, 2000), canvas_size=(2000, 2000))
+               [sg.Text("", key="foundin", size=(20, 12))]])
+img_elem = sg.Graph(key="imgview", enable_events=True,
+                    graph_top_right=(2000, 0), graph_bottom_left=(0, 2000),
+                    canvas_size=(2000, 2000))
 
-img_viewer = sg.Column([[img_elem]], size=(1100, 600), scrollable=True, key="imgview-col")
+img_viewer = sg.Column([[img_elem]], size=(1100, 600), scrollable=True,
+                       key="imgview-col")
 layout = [[img_viewer, interface]]
 window = sg.Window("ACA.py: An Auto Color Aid port by bot-boi", layout)
 window.Finalize()
@@ -63,13 +64,13 @@ while True:
         color = CTS2(current_img[y][x], 0, 0, 0)
         colors.append(color)
         colors_elem.update(values=[c.asarray()[:3] for c in colors])
-    elif event == 'Copy Best Color':
+    elif event == 'Color':
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             resultstr = 'CTS2({}, {}, {}, {}, {}, {})' \
                         .format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
             pyperclip.copy(resultstr)
-    elif event == 'Copy Finder Function':
+    elif event == 'Code':
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             result = 'def finder(img) -> PointArray2D:\n'
