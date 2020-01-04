@@ -31,3 +31,12 @@ def middle(self):  # get mean average point
     length = len(self)
     divisor = Point(length, length)
     return total // divisor
+
+
+# draw point array
+def draw(arr: np.ndarray, pts: np.ndarray,
+         color=np.array([255, 0, 0])) -> np.ndarray:
+    arr = np.copy(arr)
+    for p in pts:
+        arr[p[0], p[1]] = color
+    return arr

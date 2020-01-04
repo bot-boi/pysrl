@@ -3,6 +3,7 @@
 import numpy as np
 import math
 from typing import List
+import cv2
 
 
 # 3d color range for CTS1 color picking
@@ -83,7 +84,7 @@ class CTS1:
         return class_object([r, g, b], tol)
 
 
-# CTS1 but with a tolerance for each color channel instead of just one
+# CTS2 but with a tolerance for each color channel instead of just one
 # could use HSL instead of rgb here, but IMO not worth the effort
 # color space is color space, doesn't matter if it's HSL or RGB
 class CTS2:
@@ -150,7 +151,7 @@ class CTS2:
     def __str__(self) -> str:
         return str(self.asarray())
 
-    @classmethod  # accepts an array of CTS1 colors & calcs best color -- equiv to BestColor_CTS1
+    @classmethod  # accepts an array of CTS2 colors & calcs best color -- equiv to BestColor_CTS2
     def from_colors(class_object, colors):
         """Initialize a CTS2 color that contains the colors provided
 
@@ -158,10 +159,22 @@ class CTS2:
         colors -- the colors used generate the color
         """
         cube = RGBCube.from_colors(colors)
-        r = (cube.c1.r + cube.c2.r) // 2
-        g = (cube.c1.g + cube.c2.g) // 2
-        b = (cube.c1.b + cube.c2.b) // 2
-        rtol = r - cube.c1.r
-        gtol = g - cube.c1.g
-        btol = b - cube.c1.b
+        r = np.uint8((int(cube.c1.r) + int(cube.c2.r)) // 2)
+        g = np.uint8((int(cube.c1.g) + int(cube.c2.g)) // 2)
+        b = np.uint8((int(cube.c1.b) + int(cube.c2.b)) // 2)
+        rtol = None
+        if r - cube.c1.r < 0:
+            rtol = 0
+        else:
+            rtol = r - cube.c1.r
+        gtol = None
+        if g - cube.c1.g < 0:
+            gtol = 0
+        else:
+            gtol = g - cube.c1.g
+        btol = None
+        if b - cube.c1.b < 0:
+            btol = 0
+        else:
+            btol = b - cube.c1.b
         return class_object([r, g, b], rtol, gtol, btol)

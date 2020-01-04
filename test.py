@@ -5,7 +5,6 @@ import core.color as color
 import core.types.point_array as pa
 import core.types.point_array2d as pa2d
 from core.types.cts import CTS2
-from core.debug import draw_pa2d
 from PIL import Image
 import numpy as np
 
@@ -21,16 +20,21 @@ class TestClass(unittest.TestCase):
         cp = capture.Capture("RuneLite")
         cp.start()
         time.sleep(1)
-        img = cp.get_image()
+        arr = cp.get_image()
         cp.terminate()
-        self.assertNotEqual(len(img), 0)
-        self.assertGreater(len(img), 0)
+        self.assertNotEqual(len(arr), 0)
+        self.assertGreater(len(arr), 0)
+        if imgshow:
+            Image.fromarray(arr).show()
 
     def test_find_colors(self):  # test core/color.py
         img = Image.open('test.jpeg')
         arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = color.find_colors(arr, cts)
+        if imgshow:
+            drawn = pa.draw(np.array(img), pts)
+            Image.fromarray(drawn).show()
         self.assertEqual(len(pts), 2560)
 
     def test_pa_cluster(self):  # test core/types/point_array.py
@@ -39,8 +43,8 @@ class TestClass(unittest.TestCase):
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = color.find_colors(arr, cts)
         clusters = pa.cluster(pts)
-        drawn = draw_pa2d(np.array(img), clusters)
         if imgshow:
+            drawn = pa2d.draw(np.array(img), clusters)
             Image.fromarray(drawn).show()
         self.assertEqual(len(clusters), 5)
 
@@ -51,7 +55,7 @@ class TestClass(unittest.TestCase):
         pts = color.find_colors(arr, cts)
         clusters = pa.cluster(pts)
         filtered = pa2d.filtersize(clusters, 50, 3000)
-        drawn = draw_pa2d(arr, filtered)
+        drawn = pa2d.draw(arr, filtered)
         if imgshow:
             Image.fromarray(drawn).show()
         self.assertEqual(len(filtered), 1)

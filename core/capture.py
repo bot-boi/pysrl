@@ -107,7 +107,7 @@ class Capture:
                     print('img grab failed')
                 # output image
                 self.lock.acquire()
-                self.image = np.copy(np.array(img.copy()))
+                self.image = np.array(img.copy())
                 self.lock.release()
                 # t2 = time.time()
                 # print("capture thread ran in {}".format(t2-t1))
