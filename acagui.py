@@ -31,8 +31,8 @@ colors_elem = sg.Listbox(key="colorlist", select_mode=colors_mode,
 interface = \
     sg.Column([[sg.Button("Capture"), sg.Exit()],
                [sg.Button("Draw"), sg.Button("Erase")],
-               [sg.Button("Copy Best Color")],
-               [sg.Button("Copy Finder Function")],
+               [sg.Button("Color"), sg.Button("Function")],
+               [sg.In("Cluster", key='cluster', size=(7, 1))],
                [sg.Text("Filter (min, max):")],
                [sg.In('100, 1000', key='filter', size=(15, 1))],
                [colors_elem],
@@ -63,20 +63,20 @@ while True:
         color = CTS2(current_img[y][x], 0, 0, 0)
         colors.append(color)
         colors_elem.update(values=[c.asarray()[:3] for c in colors])
-    elif event == 'Copy Best Color':
+    elif event == 'Color':  # copy best color to clipboard
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             resultstr = 'CTS2({}, {}, {}, {}, {}, {})' \
                         .format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
             pyperclip.copy(resultstr)
-    elif event == 'Copy Finder Function':
+    elif event == 'Function':  # copy finder fn to clipboard
         if len(colors) > 0:
             r = CTS2.from_colors(colors)
             result = 'def finder(img) -> PointArray2D:\n'
             result += '\tcolor = CTS2({}, {}, {}, {}, {}, {})\n' \
                       .format(r.r, r.g, r.b, r.rtol, r.gtol, r.btol)
             result += '\tpts = find_colors(img, color)\n'
-            result += '\tpts2d = pa.cluster(points, min_samples={})\n' \
+            result += '\tpts2d = pa.cluster(points, {})\n' \
                       .format(int(window.Element('cluster').get()))
             mf, Mf = literal_eval(window.Element('filter').get())
             result += '\tpts2d = pa2d.filtersize(pts2d, {}, {})\n' \
@@ -108,6 +108,7 @@ while True:
 
     if drawflag:
         # this cant be done in the event handling idk why, hence the flag
+        cluster = int(window.Element('cluster').get())
         mf, Mf = literal_eval(window.Element('filter').get())
         e = window.Element("imgview")
         e.erase()
@@ -116,7 +117,7 @@ while True:
         t2 = time.time()
         pts = find_colors(current_img, color)
         t3 = time.time()
-        clusters = pa.cluster(pts)
+        clusters = pa.clustermulti(pts, cluster)
         t4 = time.time()
         clusters = pa2d.filtersize(clusters, mf, Mf)
         t5 = time.time()

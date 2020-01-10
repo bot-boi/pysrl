@@ -1,9 +1,15 @@
 # array of points -- equivalent to SRL's TPointArray
 import numpy as np
-import hdbscan
 from core.types.point import Point
 from core.types.box import Box
-import sklearn
+import os
+from multiprocessing import Pool
+import concurrent
+from concurrent.futures import ThreadPoolExecutor
+
+
+cpu_count = len(os.sched_getaffinity(0))
+executor = ThreadPoolExecutor(max_workers=cpu_count*2)
 
 
 # check if point array
@@ -16,46 +22,47 @@ def bounds(self) -> Box:  # return a box that contains all points in self
 
 
 # clustering algorithm by benland100
-def cluster_ben(points,radius=5):
-    clusters = np.zeros(len(points),dtype='uint32')
-    while True: #loop until all points are clustered
-        unclustered = clusters==0
+def cluster(points: np.ndarray, radius=5):
+    clusters = np.zeros(len(points), dtype='uint32')
+    while True:  # loop until all points are clustered
+        unclustered = clusters == 0
         remaining = np.count_nonzero(unclustered)
         if remaining == 0:
-            break 
+            break
         # any points near this group (and their points) become a new group
-        candidate = points[unclustered][np.random.randint(remaining)] #do this randomly to save time
-        dist = np.sum(np.square(points-candidate),axis=1)
-        nearby_mask = dist<=radius*radius #importantly includes candidate point
-        overlaps = set(list(clusters[nearby_mask])) #groups that were close
+        # do this randomly to save time
+        candidate = points[unclustered][np.random.randint(remaining)]
+        dist = np.sum(np.square(points-candidate), axis=1)
+        # importantly includes candidate point
+        nearby_mask = dist <= radius*radius
+        overlaps = set(list(clusters[nearby_mask]))  # groups that were close
         overlaps.remove(0)
         if len(overlaps) == 0:
-            G = np.max(clusters)+1 #new cluster
+            G = np.max(clusters)+1  # new cluster
         else:
-            G = np.min(list(overlaps)) #prefer smaller numbers
-        #set all nearby clusters to index G
+            G = np.min(list(overlaps))  # prefer smaller numbers
+        # set all nearby clusters to index G
         clusters[nearby_mask] = G
         for g in overlaps:
             if g == G or g == 0:
                 continue
-            clusters[clusters==g] = G
+            clusters[clusters == g] = G
     unique, counts = np.unique(clusters, return_counts=True)
-    cluster_points = np.asarray([points[clusters==c] for c in unique])
-    return cluster_points,counts
+    # cluster_points = np.asarray([points[clusters == c] for c in unique])
+    cluster_points = [points[clusters == c] for c in unique]
+    return cluster_points  # , counts
 
 
-# cluster points using HDBSCAN algorithm
-def cluster(arr: np.ndarray, min_samples=4, n_jobs=-1):
-    assert(ispa(arr))
-    clusters, counts = cluster_ben(arr, 3)
-    # print(len(clusters), 'counts',  counts)
-    return clusters
-    print(len(arr))
-    model = hdbscan.HDBSCAN(min_samples=min_samples,
-                            core_dist_n_jobs=n_jobs).fit(arr)
-    cols, rowsize = np.shape(arr)
-    labels = model.labels_
-    return [arr[labels == label] for label in np.unique(labels) if label != -1]
+def clustermulti(points: np.ndarray, radius=5) -> np.ndarray:
+    work = np.array_split(points, cpu_count)
+    futures = [executor.submit(cluster, w, radius) for w in work]
+    values = [v.result() for v in concurrent.futures.as_completed(futures)]
+    # pool = ThreadPool(cpu_count)
+    # values = pool.starmap(cluster, work)
+    result = []
+    for v in values:
+        result += v
+    return result
 
 
 def middle(self):  # get mean average point
