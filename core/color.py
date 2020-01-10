@@ -13,7 +13,7 @@ def find_colors(arr: np.ndarray, color, bounds=None):
     color  -- The color range to be looked for.
     bounds -- The area in img that will be searched for color, default area is entire image.
     """
-    (w, h, _) = np.shape(arr)
+    (h, w, _) = np.shape(arr)
     if bounds is None:
         bounds = Box.from_array([0, 0, w, h])
     b = bounds
