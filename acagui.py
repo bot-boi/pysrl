@@ -117,7 +117,7 @@ while True:
         t2 = time.time()
         pts = find_colors(current_img, color)
         t3 = time.time()
-        clusters = pa.clustermulti(pts, cluster)
+        clusters = pa.cluster(pts, cluster)
         t4 = time.time()
         clusters = pa2d.filtersize(clusters, mf, Mf)
         t5 = time.time()

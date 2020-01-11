@@ -47,6 +47,7 @@ def cluster(points: np.ndarray, radius=5):
             if g == G or g == 0:
                 continue
             clusters[clusters == g] = G
+        print(clusters)
     unique, counts = np.unique(clusters, return_counts=True)
     # cluster_points = np.asarray([points[clusters == c] for c in unique])
     cluster_points = [points[clusters == c] for c in unique]
