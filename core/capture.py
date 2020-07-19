@@ -7,6 +7,45 @@ from ewmh import EWMH
 ewmh = EWMH()
 
 
+class XObjPattern:
+    def __init__(self, ID=None, name=None):
+        self.id = ID
+        self.name = name
+
+    def match(self, other) -> bool:
+        bools = []
+        if self.id:
+            bools.append(self.id == ewmh.getWmPid(other))
+        if self.name:
+            bools.append(self.name == ewmh.getWmName(other))
+        for b in bools:
+            if b is False:
+                return False
+        return True
+
+
+RL_WINDOW = XObjPattern(name="RuneLite")
+RL_CANVAS = XObjPattern(name="sun-awt-X11-XCanvasPeer")
+SIMP_WINDOW = XObjPattern(name="Simplicity RSPS - The Biggest Pre-EOC Server 2020")
+SIMP_CANVAS = XObjPattern(name="sun-awt-X11-XPanelPeer")
+
+
+def findxobj(pattern: XObjPattern):
+    matches = []
+
+    def recursion(obj):
+        if obj is None:
+            return
+        if pattern.match(obj):
+            matches.append(obj)
+        if obj.query_tree().children:
+            for i in obj.query_tree().children:
+                recursion(i)
+
+    recursion(ewmh.root)
+    return matches
+
+
 # check if window exists, only used in tests
 def is_window(title: str) -> bool:
     clients = ewmh.getClientList()
@@ -37,8 +76,7 @@ def get_frame(client):
 
 
 # get runelite canvas
-def get_canvas(client):  # search osrs client children for canvas
-    canvas_name = "sun-awt-X11-XCanvasPeer"
+def get_canvas(client, canvas_name: str):  # search osrs client children for canvas
     for child in client.query_tree().children:   # tested for runelite only
         for child1 in child.query_tree().children:
             for child2 in child1.query_tree().children:
@@ -56,9 +94,9 @@ def get_window_frame(title: str):
 # Capture class, represents constant capture of a window
 # init with Capture(ClientWindow("RuneLite"))
 class Capture:
-    def __init__(self, window_title: str):
-        self.window = get_window(window_title)
-        self.target = get_canvas(self.window)
+    def __init__(self, windowpattern, canvaspattern):
+        self.window = findxobj(windowpattern)[0]
+        self.target = findxobj(canvaspattern)[0]  # where we grab img from
         self.lock: Lock = Lock()    # mutex lock thing
         self.thread: Thread = None  # the capture thread (init w/ self.start())
         self.kill: bool = False     # used to kill thread capture thread
@@ -115,6 +153,7 @@ class Capture:
     # returns latest capture
     def get_image(self) -> np.ndarray:
         self.lock.acquire()
-        arr = self.image.copy()
+        arr = np.copy(self.image)
         self.lock.release()
+        print(arr)
         return arr

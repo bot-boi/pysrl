@@ -14,10 +14,23 @@ imgshow = True
 
 class TestClass(unittest.TestCase):
 
-    def test_capture(self):  # test core/capture.py
+    def test_capture_runelite(self):  # test core/capture.py
         # TODO: launch runelite automatically
         # self.assertTrue(capture.is_window("RuneLite"))
-        cp = capture.Capture("RuneLite")
+        cp = capture.Capture(capture.RL_WINDOW, capture.RL_CANVAS)
+        cp.start()
+        time.sleep(1)
+        arr = cp.get_image()
+        cp.terminate()
+        self.assertNotEqual(len(arr), 0)
+        self.assertGreater(len(arr), 0)
+        if imgshow:
+            Image.fromarray(arr).show()
+
+    def test_capture_simplicity(self):  # test core/capture.py
+        # TODO: launch runelite automatically
+        # self.assertTrue(capture.is_window("RuneLite"))
+        cp = capture.Capture(capture.SIMP_WINDOW, capture.SIMP_CANVAS)
         cp.start()
         time.sleep(1)
         arr = cp.get_image()
@@ -53,9 +66,11 @@ class TestClass(unittest.TestCase):
         arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = color.find_colors(arr, cts)
-        clusters = pa.clustermulti(pts, 2)
+        clusters, boxes = pa.fastcluster(pts, 2)
         if imgshow:
             drawn = pa2d.draw(np.array(img), clusters)
+            for b in boxes:
+                drawn = b.draw(drawn)
             Image.fromarray(drawn).show('test_pa_clustermulti')
         self.assertGreaterEqual(len(clusters), 1)
 
@@ -73,4 +88,6 @@ class TestClass(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    unittest.main()
+else:
     unittest.main()
