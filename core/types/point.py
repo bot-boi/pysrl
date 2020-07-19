@@ -11,6 +11,9 @@ class Point():
     def from_array(class_object, arr):
         return class_object(arr[0], arr[1])
 
+    def __str__(self) -> str:
+        return "Point({}, {})".format(self.x, self.y)
+
     def __add__(self, other):
         return Point(self.x+other.x, self.y+other.y)
 

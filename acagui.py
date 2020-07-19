@@ -25,22 +25,24 @@ def screencapture():
 
 
 colors_mode = sg.LISTBOX_SELECT_MODE_MULTIPLE
-colors_menu = [[], ['Delete::colorlist']]
+color_menu = [[], ['Delete::colorlist']]
 colors_elem = sg.Listbox(key="colorlist", select_mode=colors_mode,
-                         size=(18, 18), values=[], right_click_menu=colors_menu)
+                         size=(18, 18), values=[], right_click_menu=color_menu)
 interface = \
     sg.Column([[sg.Button("Capture"), sg.Exit()],
                [sg.Button("Draw"), sg.Button("Erase")],
                [sg.Button("Color"), sg.Button("Function")],
-               [sg.In("Cluster", key='cluster', size=(7, 1))],
+               [sg.In("3", key='cluster', size=(7, 1))],
                [sg.Text("Filter (min, max):")],
-               [sg.In('100, 1000', key='filter', size=(15, 1))],
+               [sg.In('100, 10000000', key='filter', size=(15, 1))],
                [colors_elem],
-               [sg.Text("", key="foundin", size=(20, 10))]])
-img_elem = sg.Graph(key="imgview", enable_events=True, graph_top_right=(2000, 0),
-                    graph_bottom_left=(0, 2000), canvas_size=(2000, 2000))
+               [sg.Text("", key="foundin", size=(20, 12))]])
+img_elem = sg.Graph(key="imgview", enable_events=True,
+                    graph_top_right=(2000, 0), graph_bottom_left=(0, 2000),
+                    canvas_size=(2000, 2000))
 
-img_viewer = sg.Column([[img_elem]], size=(1100, 600), scrollable=True, key="imgview-col")
+img_viewer = sg.Column([[img_elem]], size=(1100, 600), scrollable=True,
+                       key="imgview-col")
 layout = [[img_viewer, interface]]
 window = sg.Window("ACA.py: An Auto Color Aid port by bot-boi", layout)
 window.Finalize()
@@ -117,7 +119,7 @@ while True:
         t2 = time.time()
         pts = find_colors(current_img, color)
         t3 = time.time()
-        clusters = pa.cluster(pts, cluster)
+        clusters, boxes = pa.fastcluster(pts, cluster)
         t4 = time.time()
         clusters = pa2d.filtersize(clusters, mf, Mf)
         t5 = time.time()
@@ -129,6 +131,8 @@ while True:
         foundin = window.Element('foundin')
         foundin.update(value=tstr)
         drawn_img = Image.fromarray(pa2d.draw(current_img, clusters))
+        for b in boxes:
+            drawn_img = b.draw(drawn_img)
         img_str = bufferimage(drawn_img)
         e.DrawImage(data=img_str, location=(0, 0))
     if eraseflag:
