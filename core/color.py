@@ -17,7 +17,7 @@ def find_colors(arr: np.ndarray, color, bounds=None):
     if bounds is None:
         bounds = Box.from_array([0, 0, w, h])
     b = bounds
-    arr = arr[b.y1:b.y2, b.x1:b.x2]  # apply bounds
+    arr = arr[b.y0:b.y1, b.x0:b.x1]  # apply bounds
     x, y = np.where(np.all(np.logical_and(np.less_equal(arr, color.max), np.greater_equal(arr, color.min)), 2))
     points = np.column_stack((x, y))
     return points

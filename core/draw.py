@@ -1,4 +1,4 @@
-def _plotline_low(x0, y0, x1, y1):
+def _line_low(x0, y0, x1, y1):
     xreturn = []
     yreturn = []
     dx = x1 - x0
@@ -23,7 +23,7 @@ def _plotline_low(x0, y0, x1, y1):
     return zip(xreturn, yreturn)
 
 
-def _plotline_high(x0, y0, x1, y1):
+def _line_high(x0, y0, x1, y1):
     xreturn = []
     yreturn = []
     dx = x1 - x0
@@ -46,19 +46,30 @@ def _plotline_high(x0, y0, x1, y1):
 
     return zip(xreturn, yreturn)
 
-def plotline(x0, y0, x1, y1):
+
+def line(x0, y0, x1, y1):
+    """
+    Parameters
+    ----------
+        x0, y0: point 0
+        x1, y1: point 1
+
+    Returns
+    -------
+        Iterator over all points in line from p0 to p1 in (x, y) form
+
+    """
     result = None
     if abs(y1 - y0) < abs(x1 - x0):
         if x0 > x1:
-            result = _plotline_low(x1, y1, x0, y0)
+            result = _line_low(x1, y1, x0, y0)
         else:
-            result = _plotline_low(x0, y0, x1, y1)
+            result = _line_low(x0, y0, x1, y1)
 
     else:
         if y0 > y1:
-            result = _plotline_high(x1, y1, x0, y0)
+            result = _line_high(x1, y1, x0, y0)
         else:
-            result = _plotline_high(x0, y0, x1, y1)
+            result = _line_high(x0, y0, x1, y1)
 
     return result
-        

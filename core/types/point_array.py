@@ -3,7 +3,7 @@ import numpy as np
 from core.types.point import Point
 from core.types.box import Box
 import os
-import concurrent
+# import concurrent
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -70,6 +70,7 @@ def cluster(points: np.ndarray, radius=5, bnds=None):
     return cluster_points  # , counts
 
 
+"""
 def fastcluster(points: np.ndarray, radius=5, n_jobs=None) -> np.ndarray:
     if n_jobs is None:
         n_jobs = cpu_count  # n of boxes points will be divided into
@@ -101,15 +102,7 @@ def clustermulti(points: np.ndarray, radius=5) -> np.ndarray:
     for v in values:
         result += v
     return result
-
-
-def middle(self):  # get mean average point
-    total = Point(0, 0)
-    for p in self:
-        total += p
-    length = len(self)
-    divisor = Point(length, length)
-    return total // divisor
+"""
 
 
 # draw point array

@@ -61,19 +61,6 @@ class TestClass(unittest.TestCase):
             Image.fromarray(drawn).show('test_pa_cluster')
         self.assertGreaterEqual(len(clusters), 1)
 
-    def test_pa_clustermulti(self):  # test core/types/point_array.py
-        img = Image.open('test.jpeg')
-        arr = np.array(img)
-        cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = color.find_colors(arr, cts)
-        clusters, boxes = pa.fastcluster(pts, 2)
-        if imgshow:
-            drawn = pa2d.draw(np.array(img), clusters)
-            for b in boxes:
-                drawn = b.draw(drawn)
-            Image.fromarray(drawn).show('test_pa_clustermulti')
-        self.assertGreaterEqual(len(clusters), 1)
-
     def test_pa2d_filter(self):  # test core/types/point_array2d.py
         img = Image.open('test.jpeg')
         arr = np.array(img)

@@ -9,7 +9,7 @@ import string
 
 
 def loadfont(font: str):
-    path = './SRL-Fonts/{}/'.format(font)
+    path = '../SRL-Fonts/{}/'.format(font)
     fnames = [fname for fname in os.listdir(path) if '.bmp' in fname]
     templates = [cv2.imread(path + fname) for fname in fnames]
     return {chr(int(fname[:-4])): template for fname, template in zip(fnames, templates)}  # mask black values
@@ -22,7 +22,7 @@ def testfont(target: str, font: str):
         if char in string.ascii_letters:
             h, w = template.shape[:-1]
             res = cv2.matchTemplate(target, template, cv2.TM_CCOEFF_NORMED)
-            threshold = 0.8
+            threshold = 0.7
             loc = np.where(res >= threshold)
             for pt in zip(*loc[::-1]):  # Switch collumns and rows
                 cv2.rectangle(target, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 1)
