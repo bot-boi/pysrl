@@ -56,7 +56,10 @@ class XObjPattern:
         if self.id:
             bools.append(self.id == ewmh.getWmPid(other))
         if self.name:
-            bools.append(self.name == ewmh.getWmName(other))
+            othername = ewmh.getWmName(other)
+            if type(othername) == bytes:  # sometimes wm names are bytes
+                othername = othername.decode()  # other times they are str?
+            bools.append(self.name == othername)
         for b in bools:
             if b is False:
                 return False
