@@ -119,7 +119,7 @@ while True:
         t2 = time.time()
         pts = find_colors(current_img, color)
         t3 = time.time()
-        clusters, boxes = pa.fastcluster(pts, cluster)
+        clusters = pa.cluster(pts, cluster)
         t4 = time.time()
         clusters = pa2d.filtersize(clusters, mf, Mf)
         t5 = time.time()
@@ -130,9 +130,9 @@ while True:
         tstr += 'total (w/out CTS2): {}'.format(str(t5 - t2))
         foundin = window.Element('foundin')
         foundin.update(value=tstr)
-        drawn_img = pa2d.draw(current_img, clusters)
-        for b in boxes:
-            drawn_img = b.draw(drawn_img)
+        drawn_img = Image.fromarray(pa2d.draw(current_img, clusters))
+        # for b in boxes:
+        #   drawn_img = b.draw(drawn_img)
         img_str = bufferimage(drawn_img)
         e.DrawImage(data=img_str, location=(0, 0))
     if eraseflag:
