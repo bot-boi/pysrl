@@ -5,11 +5,13 @@ import core.color as color
 import core.types.point_array as pa
 import core.types.point_array2d as pa2d
 from core.types.cts import CTS2
+import core.find as find
 from PIL import Image
 import numpy as np
 
 
-imgshow = True
+# TODO: better test configuration
+imgshow = False
 
 
 class TestClass(unittest.TestCase):
@@ -72,6 +74,27 @@ class TestClass(unittest.TestCase):
         if imgshow:
             Image.fromarray(drawn).show('test_pa2d_filter')
         self.assertEqual(len(filtered), 1)
+
+    def test_findimage(self):  # test core/text.findimage
+        img = np.array(Image.open('login.png').convert('RGB'))
+        # screenshot of img
+        subimg = np.array(Image.open('login-slice.png').convert('RGB'))
+        matches = find.image(subimg, img)
+        if imgshow:
+            Image.fromarray(subimg).show()
+            for match in matches:
+                match.draw(img)
+            Image.fromarray(img).show()
+        self.assertEqual(len(matches), 1)
+
+    def test_findtext(self):  # test core/text.findtext
+        timg = np.array(Image.open('login-slice.png').convert('RGB'))
+        matches = find.text('New User', timg)
+        if imgshow:
+            for match in matches:
+                match.draw(timg)
+            Image.fromarray(timg).show()
+        self.assertEqual(len(matches), 1)
 
 
 if __name__ == '__main__':
