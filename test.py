@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import unittest
 import time
 import core.capture as capture
@@ -75,7 +76,7 @@ class TestClass(unittest.TestCase):
             Image.fromarray(drawn).show('test_pa2d_filter')
         self.assertEqual(len(filtered), 1)
 
-    def test_findimage(self):  # test core/text.findimage
+    def test_findimage(self):  # test core/find.image
         img = np.array(Image.open('login.png').convert('RGB'))
         # screenshot of img
         subimg = np.array(Image.open('login-slice.png').convert('RGB'))
@@ -87,7 +88,17 @@ class TestClass(unittest.TestCase):
             Image.fromarray(img).show()
         self.assertEqual(len(matches), 1)
 
-    def test_findtext(self):  # test core/text.findtext
+    def test_findimagecv2(self):  # test core/find.imagecv2
+        img = np.array(Image.open('login2.png').convert('RGB'))
+        subimg = np.array(Image.open('login-slice.png').convert('RGB'))
+        matches = find.imagecv2(subimg, img, 0.8)
+        if imgshow:
+            for match in matches:
+                match.draw(img)
+            Image.fromarray(img).show()
+        self.assertEqual(len(matches), 1)
+
+    def test_findtext(self):  # test core/find.text
         timg = np.array(Image.open('login-slice.png').convert('RGB'))
         matches = find.text('New User', timg)
         if imgshow:

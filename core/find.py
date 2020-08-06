@@ -6,12 +6,13 @@
 # white chars = (255, 255, 255)
 import numpy as np
 import numpy.ma as ma
+import cv2
 from PIL import Image
 import os
 from core.types.box import Box
 
 
-def _loadfont(font: str, color):
+def _loadfont(font: str):
     path = './SRL-Fonts/{}/'.format(font)
     fnames = [fname for fname in os.listdir(path) if '.bmp' in fname]
     imgs = [Image.open(path + fname).convert('RGB') for fname in fnames]
@@ -52,7 +53,17 @@ def image(needle: np.ndarray, haystack: np.ndarray):
     return matches
 
 
-# def cv2image(template, threshold)
+def imagecv2(template: np.ndarray, target: np.ndarray, threshold: float,
+             method=cv2.TM_CCOEFF_NORMED):
+    template = cv2.cvtColor(template, cv2.COLOR_RGB2BGR)
+    target = cv2.cvtColor(target, cv2.COLOR_RGB2BGR)
+    w, h = template.shape[:2]
+    res = cv2.matchTemplate(target, template, method)
+    loc = np.where(res >= threshold)
+    matches = []
+    for pt in zip(*loc):
+        matches.append(Box.from_array([pt[0], pt[1], pt[0] + w, pt[1] + h]))
+    return matches
 
 
 # TODO: figure out why this works with yellow text
@@ -76,7 +87,7 @@ def text(txt: str, target: np.ndarray, fontname="UpChars07"):
             location data of text
 
     """
-    target = ma.array(target, mask=target != [0, 0, 0])
+    target = ma.array(target, mask=target != [255, 255, 255])
     font = _loadfont(fontname)
     height = font['a'].shape[0]
     txtimg = np.zeros((height, 1, 3), dtype='uint8')
