@@ -53,8 +53,29 @@ def image(needle: np.ndarray, haystack: np.ndarray):
     return matches
 
 
-def imagecv2(template: np.ndarray, target: np.ndarray, threshold: float,
+def imagecv2(template: np.ndarray, target: np.ndarray,
+             threshold: float = 0.8,
              method=cv2.TM_CCOEFF_NORMED):
+    """
+    Find an image (template) in another image using cv2.
+
+    Parameters
+    ----------
+        template : np.ndarray
+            the image to be found
+        target : np.ndarray
+            the image to be found in
+        threshold : float
+            how closely the template should match (0-1.0)
+        method
+            the method cv2 uses to compare template to source
+
+    Returns
+    -------
+        matches: List[Box]
+            bounding boxes around any matches
+
+    """
     template = cv2.cvtColor(template, cv2.COLOR_RGB2BGR)
     target = cv2.cvtColor(target, cv2.COLOR_RGB2BGR)
     w, h = template.shape[:2]
