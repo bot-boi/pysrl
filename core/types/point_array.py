@@ -2,13 +2,12 @@
 import numpy as np
 from core.types.point import Point
 from core.types.box import Box
-import os
-# import concurrent
-from concurrent.futures import ThreadPoolExecutor
+# import os
+# from concurrent.futures import ThreadPoolExecutor
 
 
-cpu_count = len(os.sched_getaffinity(0))
-executor = ThreadPoolExecutor(max_workers=cpu_count*2)
+# cpu_count = len(os.sched_getaffinity(0))
+# executor = ThreadPoolExecutor(max_workers=cpu_count*2)
 
 
 # check if point array

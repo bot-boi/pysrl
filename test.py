@@ -2,7 +2,6 @@
 import unittest
 import time
 import core.capture as capture
-import core.color as color
 import core.types.point_array as pa
 import core.types.point_array2d as pa2d
 from core.types.cts import CTS2
@@ -47,7 +46,7 @@ class TestClass(unittest.TestCase):
         img = Image.open('test.jpeg')
         arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = color.find_colors(arr, cts)
+        pts = find.colors(arr, cts)
         if imgshow:
             drawn = pa.draw(np.array(img), pts)
             Image.fromarray(drawn).show('test_find_colors')
@@ -57,7 +56,7 @@ class TestClass(unittest.TestCase):
         img = Image.open('test.jpeg')
         arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = color.find_colors(arr, cts)
+        pts = find.colors(arr, cts)
         clusters = pa.cluster(pts, 2)
         if imgshow:
             drawn = pa2d.draw(np.array(img), clusters)
@@ -68,7 +67,7 @@ class TestClass(unittest.TestCase):
         img = Image.open('test.jpeg')
         arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = color.find_colors(arr, cts)
+        pts = find.colors(arr, cts)
         clusters = pa.cluster(pts, 2)
         filtered = pa2d.filtersize(clusters, 50, 3000)
         drawn = pa2d.draw(arr, filtered)

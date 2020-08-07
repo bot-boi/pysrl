@@ -10,6 +10,36 @@ import cv2
 from PIL import Image
 import os
 from core.types.box import Box
+from core.types.cts import CTS
+
+
+def colors(arr: np.ndarray, color: CTS, bounds=None):
+    """
+    Find locations of pixels in an image within a color range.
+
+    Parameters
+    ----------
+        arr : np.ndarray
+            the image to be searched
+        color : CTS1 or CTS2
+            the color range to capture
+        bounds : Box
+            the area of the image to search
+
+    Returns
+    -------
+        points : np.ndarray
+            a list of points that fall in color range
+
+    """
+    (h, w, _) = np.shape(arr)
+    if bounds is None:
+        bounds = Box.from_array([0, 0, w, h])
+    b = bounds
+    arr = arr[b.y0:b.y1, b.x0:b.x1]  # apply bounds
+    x, y = np.where(np.logical_and(np.all(arr <= color.max, 2), np.all(arr >= color.min, 2)))
+    points = np.column_stack((x, y))
+    return points
 
 
 def _loadfont(font: str):

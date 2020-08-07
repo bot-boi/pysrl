@@ -3,7 +3,6 @@
 import numpy as np
 import math
 from typing import List
-import cv2
 
 
 # 3d color range for CTS1 color picking
@@ -32,9 +31,13 @@ class RGBCube:
         return res
 
 
+class CTS:
+    pass
+
+
 # accepts [r,g,b] array and tolerance
 # alternate constructor sigs: r, g, b, tol OR color-number, tol
-class CTS1:
+class CTS1(CTS):
     def __init__(self, color, tol):
         """Initialize a color with a color tolerance speed of 1.
 
@@ -87,7 +90,7 @@ class CTS1:
 # CTS2 but with a tolerance for each color channel instead of just one
 # could use HSL instead of rgb here, but IMO not worth the effort
 # color space is color space, doesn't matter if it's HSL or RGB
-class CTS2:
+class CTS2(CTS):
     def __init__(self, color, rtol, gtol, btol):
         """Initialize a color with a color tolerance speed of 2.
 
