@@ -9,11 +9,12 @@ import numpy.ma as ma
 import cv2
 from PIL import Image
 import os
+from typing import List, Dict
 from core.types.box import Box
 from core.types.cts import CTS
 
 
-def colors(arr: np.ndarray, color: CTS, bounds=None):
+def colors(arr: np.ndarray, color: CTS, bounds=None) -> np.ndarray:
     """
     Find locations of pixels in an image within a color range.
 
@@ -42,7 +43,7 @@ def colors(arr: np.ndarray, color: CTS, bounds=None):
     return points
 
 
-def _loadfont(font: str):
+def _loadfont(font: str) -> Dict[str, np.ndarray]:
     path = './SRL-Fonts/{}/'.format(font)
     fnames = [fname for fname in os.listdir(path) if '.bmp' in fname]
     imgs = [Image.open(path + fname).convert('RGB') for fname in fnames]
@@ -50,7 +51,7 @@ def _loadfont(font: str):
     return {chr(int(fname[:-4])): raw for fname, raw in zip(fnames, raws)}
 
 
-def image(needle: np.ndarray, haystack: np.ndarray):
+def image(needle: np.ndarray, haystack: np.ndarray) -> List[Box]:
     """
     Find an image (exactly) within another image.
 
@@ -85,7 +86,7 @@ def image(needle: np.ndarray, haystack: np.ndarray):
 
 def imagecv2(template: np.ndarray, target: np.ndarray,
              threshold: float = 0.8,
-             method=cv2.TM_CCOEFF_NORMED):
+             method=cv2.TM_CCOEFF_NORMED) -> List[Box]:
     """
     Find an image (template) in another image using cv2.
 
@@ -119,7 +120,7 @@ def imagecv2(template: np.ndarray, target: np.ndarray,
 
 # TODO: figure out why this works with yellow text
 # TODO: fix bug (try finding 'New' in login-slice.png for example)
-def text(txt: str, target: np.ndarray, fontname="UpChars07"):
+def text(txt: str, target: np.ndarray, fontname="UpChars07") -> List[Box]:
     """
     Find text in an image using a certain font.
 

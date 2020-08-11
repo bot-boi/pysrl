@@ -1,4 +1,4 @@
-def _line_low(x0, y0, x1, y1):
+def _line_low(x0, y0, x1, y1) -> zip((int, int)):
     xreturn = []
     yreturn = []
     dx = x1 - x0
@@ -23,7 +23,7 @@ def _line_low(x0, y0, x1, y1):
     return zip(xreturn, yreturn)
 
 
-def _line_high(x0, y0, x1, y1):
+def _line_high(x0, y0, x1, y1) -> zip((int, int)):
     xreturn = []
     yreturn = []
     dx = x1 - x0
@@ -47,7 +47,7 @@ def _line_high(x0, y0, x1, y1):
     return zip(xreturn, yreturn)
 
 
-def line(x0, y0, x1, y1):
+def line(x0, y0, x1, y1) -> zip((int, int)):
     """
     Parameters
     ----------
