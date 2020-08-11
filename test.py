@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import unittest
-import time
 import core.capture as capture
 import core.types.point_array as pa
 import core.types.point_array2d as pa2d
@@ -18,29 +17,21 @@ class TestClass(unittest.TestCase):
 
     def test_capture_runelite(self):  # test core/capture.py
         # TODO: launch runelite automatically
-        # self.assertTrue(capture.is_window("RuneLite"))
-        cp = capture.Capture(capture.RL_WINDOW, capture.RL_CANVAS)
-        cp.start()
-        time.sleep(1)
+        cp = capture.Capture(capture.RL_CANVAS)
         arr = cp.get_image()
-        cp.terminate()
         self.assertNotEqual(len(arr), 0)
         self.assertGreater(len(arr), 0)
         if imgshow:
-            Image.fromarray(arr).show()
+            Image.fromarray(arr).show("test_capture_runelite")
 
     def test_capture_simplicity(self):  # test core/capture.py
-        # TODO: launch runelite automatically
-        # self.assertTrue(capture.is_window("RuneLite"))
-        cp = capture.Capture(capture.SIMP_WINDOW, capture.SIMP_CANVAS)
-        cp.start()
-        time.sleep(1)
+        # TODO: launch simplicity client automatically
+        cp = capture.Capture(capture.SIMP_CANVAS)
         arr = cp.get_image()
-        cp.terminate()
         self.assertNotEqual(len(arr), 0)
         self.assertGreater(len(arr), 0)
         if imgshow:
-            Image.fromarray(arr).show()
+            Image.fromarray(arr).show("test_capture_simplicity")
 
     def test_find_colors(self):  # test core/color.py
         img = Image.open('test.jpeg')
@@ -81,10 +72,9 @@ class TestClass(unittest.TestCase):
         subimg = np.array(Image.open('login-slice.png').convert('RGB'))
         matches = find.image(subimg, img)
         if imgshow:
-            Image.fromarray(subimg).show()
             for match in matches:
                 match.draw(img)
-            Image.fromarray(img).show()
+            Image.fromarray(img).show("test_findimage")
         self.assertEqual(len(matches), 1)
 
     def test_findimagecv2(self):  # test core/find.imagecv2
@@ -94,7 +84,7 @@ class TestClass(unittest.TestCase):
         if imgshow:
             for match in matches:
                 match.draw(img)
-            Image.fromarray(img).show()
+            Image.fromarray(img).show("test_findimagecv2")
         self.assertEqual(len(matches), 1)
 
     def test_findtext(self):  # test core/find.text
@@ -103,7 +93,7 @@ class TestClass(unittest.TestCase):
         if imgshow:
             for match in matches:
                 match.draw(timg)
-            Image.fromarray(timg).show()
+            Image.fromarray(timg).show("test_findtext")
         self.assertEqual(len(matches), 1)
 
 

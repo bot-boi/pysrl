@@ -3,6 +3,7 @@ from core.types.point import Point
 import core.draw as draw
 import itertools
 import numpy as np
+import random
 
 
 class Box:
@@ -26,10 +27,14 @@ class Box:
 
     Methods
     -------
+        from_array -> Box
+            instantiate a Box from an array ie. [0, 0, 9, 9]
         contains(points:) -> List[Point]:
             returns all elements in points contained in the box
         draw(img: np.ndarray, color: List[int]) -> np.ndarray:
             returns an image with this box drawn on it
+        get_point() -> (int, int)
+            returns a random point in Self
     """
     def __init__(self, top_left: Point, bot_right: Point):
         # type: (Point, Point) -> None
@@ -71,6 +76,11 @@ class Box:
         return np.array([p for p in points
                          if p[0] >= self.x0 and p[0] <= self.x1
                          and p[1] >= self.y0 and p[1] <= self.y1])
+
+    def get_point(self) -> (int, int):
+        x = random.randrange(self.x0, self.x1)
+        y = random.randrange(self.y0, self.y1)
+        return (x, y)
 
     def draw(self, img: np.ndarray, color=[255, 0, 0]):
         """
