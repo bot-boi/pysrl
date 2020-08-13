@@ -1,5 +1,5 @@
 import pyautogui
-from core.types.box import Box
+from pysrl.core.types.box import Box
 from typing import List
 
 

@@ -1,10 +1,10 @@
 import unittest
 import os
-import core.capture as capture
-import core.types.point_array as pa
-import core.types.point_array2d as pa2d
-from core.types.cts import CTS2
-import core.find as find
+import pysrl.core.capture as capture
+import pysrl.core.types.point_array as pa
+import pysrl.core.types.point_array2d as pa2d
+import pysrl.core.find as find
+from pysrl.core.types.cts import CTS2
 from PIL import Image
 import numpy as np
 

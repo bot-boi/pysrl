@@ -1,6 +1,6 @@
 # non-rotateable bounding box
-from core.types.point import Point
-import core.draw as draw
+from pysrl.core.types.point import Point
+import pysrl.core.draw as draw
 import itertools
 import numpy as np
 import random

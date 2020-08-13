@@ -10,8 +10,8 @@ import cv2
 from PIL import Image
 import os
 from typing import List, Dict
-from core.types.box import Box
-from core.types.cts import CTS
+from pysrl.core.types.box import Box
+from pysrl.core.types.cts import CTS
 
 
 def colors(arr: np.ndarray, color: CTS, bounds=None) -> np.ndarray:

@@ -1,7 +1,7 @@
 # array of points -- equivalent to SRL's TPointArray
 import numpy as np
-from core.types.point import Point
-from core.types.box import Box
+from pysrl.core.types.point import Point
+from pysrl.core.types.box import Box
 # import os
 # from concurrent.futures import ThreadPoolExecutor
 
