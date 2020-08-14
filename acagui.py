@@ -5,12 +5,12 @@ import io
 import time
 import pyperclip
 import numpy as np
-import core.types.point_array as pa
-import core.types.point_array2d as pa2d
+import pysrl.core.types.point_array as pa
+import pysrl.core.types.point_array2d as pa2d
+import pysrl.core.find as find
 from ast import literal_eval
 from PIL import Image
-from core.types.cts import CTS2
-from core.color import find_colors
+from pysrl.core.types.cts import CTS2
 
 
 def bufferimage(img):
@@ -117,7 +117,7 @@ while True:
         t1 = time.time()
         color = CTS2.from_colors(colors)
         t2 = time.time()
-        pts = find_colors(current_img, color)
+        pts = find.colors(current_img, color)
         t3 = time.time()
         clusters = pa.cluster(pts, cluster)
         t4 = time.time()

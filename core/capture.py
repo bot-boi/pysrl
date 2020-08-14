@@ -108,7 +108,7 @@ def get_offset(window) -> (int, int):
     # get x,y offset of a window relative to root
     xoff = 0
     yoff = 0
-    while window.query_tree().parent.id != ewmh.root.id:
+    while window.id != ewmh.root.id:
         g = window.get_geometry()
         xoff += g.x
         yoff += g.y

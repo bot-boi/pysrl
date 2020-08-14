@@ -69,8 +69,9 @@ def image(needle: np.ndarray, haystack: np.ndarray) -> List[Box]:
 
     """
     matches = []
-    swidth, sheight, _ = needle.shape
-    tx, ty, _ = haystack.shape
+    # NOTE: height is number of rows, width is number of columns DUH
+    sheight, swidth, _ = needle.shape
+    ty, tx, _ = haystack.shape  # total x,y
     if swidth > tx or sheight > ty:
         raise Exception('Needle is larger than haystack.')
     for y in range(ty):  # iterate y 1st cus text travels horizontal
@@ -79,7 +80,7 @@ def image(needle: np.ndarray, haystack: np.ndarray) -> List[Box]:
         for x in range(tx):
             if x+swidth > tx:
                 break
-            if np.all(needle == haystack[x:x+swidth, y:y+sheight]):
+            if np.all(needle == haystack[y:y+sheight, x:x+swidth]):
                 matches.append(Box.from_array([x, y, x+swidth, y+sheight]))
     return matches
 
@@ -109,7 +110,7 @@ def imagecv2(template: np.ndarray, target: np.ndarray,
     """
     template = cv2.cvtColor(template, cv2.COLOR_RGB2BGR)
     target = cv2.cvtColor(target, cv2.COLOR_RGB2BGR)
-    w, h = template.shape[:2]
+    h, w, _ = template.shape
     res = cv2.matchTemplate(target, template, method)
     loc = np.where(res >= threshold)
     matches = []

@@ -1,5 +1,5 @@
 # non-rotateable bounding box
-from pysrl.core.types.point import Point
+import pysrl.core.types.point as point
 import pysrl.core.draw as draw
 import itertools
 import numpy as np
@@ -36,8 +36,7 @@ class Box:
         get_point() -> (int, int)
             returns a random point in Self
     """
-    def __init__(self, top_left: Point, bot_right: Point):
-        # type: (Point, Point) -> None
+    def __init__(self, top_left: point.Point, bot_right: point.Point):
         self.top_left = top_left  # top left corner
         self.bot_right = bot_right  # bot right corner
         self.x0 = top_left.x
@@ -56,7 +55,7 @@ class Box:
         Creates a Box from an array with shape [x0, y0, x1, y1]
         """
         if len(arr) == 4:
-            return class_object(Point.from_array(arr[:2]), Point.from_array(arr[2:]))
+            return class_object(point.Point.from_array(arr[:2]), point.Point.from_array(arr[2:]))
         else:
             raise ValueError("Passed array with length {}, needs to be length 4".format(len(arr)))
 
@@ -82,6 +81,9 @@ class Box:
         y = random.randrange(self.y0, self.y1)
         return (x, y)
 
+    def get_middle(self) -> point.Point:
+        return (self.top_left + self.bot_right) // point.Point(2, 2)
+
     def draw(self, img: np.ndarray, color=[255, 0, 0]):
         """
         Draws a box on an image.
@@ -97,7 +99,7 @@ class Box:
 
         """
         if len(color) != 3:
-            raise Exception("invalid color passed to core.types.box.draw")
+            raise Exception('Invalid color passed to Box.draw')
         color = np.array(color)
         l0 = draw.line(self.x0, self.y0, self.x1, self.y0)
         l1 = draw.line(self.x0, self.y0, self.x0, self.y1)
@@ -105,6 +107,5 @@ class Box:
         l3 = draw.line(self.x1, self.y1, self.x0, self.y1)
         square = itertools.chain(l0, l1, l2, l3)
         for x, y in square:
-            img[x][y] = color
-
+            img[y][x] = color
         return img

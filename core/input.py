@@ -1,17 +1,17 @@
 import pyautogui
 from pysrl.core.types.box import Box
-from typing import List
+from pysrl.core.types.point import Point
 
 
 def click(offset: (int, int), target: any, button: str):
     # pseudo function overloading
-    if type(target) is Box:
-        x, y = target.get_point()
-        x += offset[0]
-        y += offset[1]
+    x = target.x
+    y = target.y
+    x += offset[0]
+    y += offset[1]
     pyautogui.click((x, y), button=button)
 
 
-def type(keys: str | List[str]):
+def type(keys):  # keys can be str or List[str]
     # wrapper for when additional functionality is needed
     pyautogui.typewrite(keys)
