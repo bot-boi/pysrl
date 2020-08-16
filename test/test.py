@@ -1,12 +1,12 @@
 import unittest
 import os
+import numpy as np
 import pysrl.core.capture as capture
 import pysrl.core.types.point_array as pa
 import pysrl.core.types.point_array2d as pa2d
 import pysrl.core.find as find
 from pysrl.core.types.cts import CTS2
-from PIL import Image
-import numpy as np
+from pysrl.core.types.image import Image
 
 
 # setting for showing test results to user
@@ -47,9 +47,8 @@ class TestClass(unittest.TestCase):
 
     def test_pa_cluster(self):  # test core/types/point_array.py
         img = Image.open('test/test.jpeg')
-        arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = find.colors(arr, cts)
+        pts = find.colors(img, cts)
         clusters = pa.cluster(pts, 2)
         if imgshow:
             drawn = pa2d.draw(np.array(img), clusters)
@@ -58,20 +57,19 @@ class TestClass(unittest.TestCase):
 
     def test_pa2d_filter(self):  # test core/types/point_array2d.py
         img = Image.open('test/test.jpeg')
-        arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = find.colors(arr, cts)
+        pts = find.colors(img, cts)
         clusters = pa.cluster(pts, 2)
         filtered = pa2d.filtersize(clusters, 50, 3000)
-        drawn = pa2d.draw(arr, filtered)
+        drawn = pa2d.draw(img, filtered)
         if imgshow:
             Image.fromarray(drawn).show('test_pa2d_filter')
         self.assertEqual(len(filtered), 1)
 
     def test_findimage(self):  # test core/find.image
-        img = np.array(Image.open('test/login.png').convert('RGB'))
+        img = Image.open('test/login.png')
         # screenshot of img
-        subimg = np.array(Image.open('test/login-slice.png').convert('RGB'))
+        subimg = Image.open('test/login-slice.png')
         matches = find.image(subimg, img)
         if imgshow:
             for match in matches:
@@ -80,8 +78,8 @@ class TestClass(unittest.TestCase):
         self.assertEqual(len(matches), 1)
 
     def test_findimagecv2(self):  # test core/find.imagecv2
-        img = np.array(Image.open('test/login2.png').convert('RGB'))
-        subimg = np.array(Image.open('test/login-slice.png').convert('RGB'))
+        img = Image.open('test/login2.png')
+        subimg = Image.open('test/login-slice.png')
         matches = find.imagecv2(subimg, img, 0.8)
         if imgshow:
             for match in matches:
@@ -90,7 +88,7 @@ class TestClass(unittest.TestCase):
         self.assertEqual(len(matches), 1)
 
     def test_findtext(self):  # test core/find.text
-        timg = np.array(Image.open('test/login-slice.png').convert('RGB'))
+        timg = Image.open('test/login-slice.png')
         matches = find.text('New User', timg)
         if imgshow:
             for match in matches:

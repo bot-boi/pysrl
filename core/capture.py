@@ -1,6 +1,5 @@
-from PIL import Image
 from Xlib import X, error as Xerror
-import numpy as np
+from pysrl.core.types.image import Image
 from ewmh import EWMH
 ewmh = EWMH()
 
@@ -66,7 +65,8 @@ class XObjPattern:
 
 RL_WINDOW = XObjPattern(name="RuneLite")
 RL_CANVAS = XObjPattern(name="sun-awt-X11-XCanvasPeer")
-SIMP_WINDOW = XObjPattern(name="Simplicity RSPS - The Biggest Pre-EOC Server 2020")
+SIMP_WINDOW = XObjPattern(name="Simplicity RSPS - The Biggest \
+                                Pre-EOC Server 2020")
 SIMP_CANVAS = XObjPattern(name="sun-awt-X11-XPanelPeer")
 
 
@@ -124,7 +124,7 @@ class Capture:  #
         self.frame = get_frame(self.canvas)
         self.offset = get_offset(self.canvas)
 
-    def get_image(self):
+    def get_image(self) -> Image:
         # get the shape of the window and reload canvas if it fails
         # canvas id changes on resize, other events cause this too ?
         try:
@@ -142,6 +142,5 @@ class Capture:  #
             ewmh.display.flush()  # force targeted window to top
             raw = self.canvas.get_image(0, 0, g.width, g.height, X.ZPixmap,
                                         0xffffffff)
-        img = Image.frombytes("RGB", (g.width, g.height), raw.data,
-                              "raw", "BGRX")
-        return np.array(img)
+        img = Image.frombytes((g.width, g.height), raw.data)
+        return img
