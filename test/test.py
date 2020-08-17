@@ -1,12 +1,10 @@
 import unittest
 import os
-import numpy as np
 import pysrl.core.capture as capture
-import pysrl.core.types.point_array as pa
-import pysrl.core.types.point_array2d as pa2d
 import pysrl.core.find as find
 from pysrl.core.types.cts import CTS2
 from pysrl.core.types.image import Image
+from pysrl.core.types.point_array2d import PointArray2D
 
 
 # setting for showing test results to user
@@ -37,61 +35,57 @@ class TestClass(unittest.TestCase):
 
     def test_find_colors(self):  # test core/color.py
         img = Image.open('test/test.jpeg')
-        arr = np.array(img)
         cts = CTS2([0, 0, 0], 10, 10, 10)
-        pts = find.colors(arr, cts)
+        pts = find.colors(img, cts)
         if imgshow:
-            drawn = pa.draw(np.array(img), pts)
-            Image.fromarray(drawn).show('test_find_colors')
+            pts.draw(img).show('test_find_colors')
         self.assertEqual(len(pts), 2560)
 
     def test_pa_cluster(self):  # test core/types/point_array.py
         img = Image.open('test/test.jpeg')
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = find.colors(img, cts)
-        clusters = pa.cluster(pts, 2)
+        clusters = pts.cluster(2)
         if imgshow:
-            drawn = pa2d.draw(np.array(img), clusters)
-            Image.fromarray(drawn).show('test_pa_cluster')
+            clusters.draw(img).show('test_pa_cluster')
         self.assertGreaterEqual(len(clusters), 1)
 
     def test_pa2d_filter(self):  # test core/types/point_array2d.py
         img = Image.open('test/test.jpeg')
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = find.colors(img, cts)
-        clusters = pa.cluster(pts, 2)
-        filtered = pa2d.filtersize(clusters, 50, 3000)
-        drawn = pa2d.draw(img, filtered)
+        clusters = pts.cluster(2)
+        filtered = PointArray2D(clusters.filtersize(50, 3000))
         if imgshow:
-            Image.fromarray(drawn).show('test_pa2d_filter')
+            filtered.draw(img).show('test_pa2d_filter')
         self.assertEqual(len(filtered), 1)
 
-    def test_findimage(self):  # test core/find.image
+    def test_find_image(self):  # test core/find.image
         img = Image.open('test/login.png')
         # screenshot of img
         subimg = Image.open('test/login-slice.png')
         matches = find.image(subimg, img)
         if imgshow:
             for match in matches:
-                match.draw(img)
-            Image.fromarray(img).show("test_findimage")
+                img = match.draw(img)
+            img.show("test_findimage")
         self.assertEqual(len(matches), 1)
 
-    def test_findimagecv2(self):  # test core/find.imagecv2
+    def test_find_imagecv2(self):  # test core/find.imagecv2
         img = Image.open('test/login2.png')
         subimg = Image.open('test/login-slice.png')
         matches = find.imagecv2(subimg, img, 0.8)
         if imgshow:
             for match in matches:
-                match.draw(img)
-            Image.fromarray(img).show("test_findimagecv2")
+                img = match.draw(img)
+            img.show("test_findimagecv2")
         self.assertEqual(len(matches), 1)
 
-    def test_findtext(self):  # test core/find.text
+    def test_find_text(self):  # test core/find.text
         timg = Image.open('test/login-slice.png')
         matches = find.text('New User', timg)
         if imgshow:
             for match in matches:
-                match.draw(timg)
-            Image.fromarray(timg).show("test_findtext")
+                timg = match.draw(timg)
+            timg.show("test_findtext")
         self.assertEqual(len(matches), 1)

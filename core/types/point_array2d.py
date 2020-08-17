@@ -1,24 +1,32 @@
 # array of point arrays -- equivalent to SRL's T2DPointArray
 import numpy as np
-from typing import List
+import numpy.ma as ma
+from .error import NumpyShapeError
+from .image import Image
 
 
-# 2dpoint array class, defines array of array of points and operations on them
-# underlying data is a list in the format [pointarray0,pointarray1,etc]
-def filtersize(arr, m, M):  # removes clusters outside range m/M
-    return [pts for pts in arr if len(pts) > m and len(pts) < M]
+class PointArray2D(ma.MaskedArray):
+    def __new__(class_object, data: np.ndarray):
+        if data.shape[2] != 2:
+            raise NumpyShapeError('(parray, point, x/y)', data.shape)
+        obj = super().__new__(class_object, data, dtype='uint8') \
+            .view(class_object)
+        return obj
 
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        super().__array_finalize__(obj)
 
-def sort_by_middle(self, middle):  # sort clusters by middle -- inplace
-    # sort by distance between midpoint of each point array and middle
-    self.sort(key=lambda pa: pa.middle().distance_from(middle))
+    # TODO: make this return a PointArray2D
+    def filtersize(self, m, M):  # removes clusters outside range m/M
+        return ma.array([cluster for cluster in self
+                        if len(cluster) > m and len(cluster) < M])
 
-
-# draw 2d point array with random colors
-def draw(arr: np.ndarray, clusters: List[np.ndarray]) -> np.ndarray:
-    arr = np.copy(arr)
-    for c in clusters:
-        color = np.random.randint(0, 255, 3, dtype="uint8")
-        for p in c:
-            arr[p[0], p[1]] = color
-    return arr
+    def draw(self, img: Image) -> Image:
+        img = img.copy()
+        for c in self:
+            color = np.random.randint(0, 255, 3, dtype="uint8")
+            for p in c:
+                img[p[0], p[1]] = color
+        return img

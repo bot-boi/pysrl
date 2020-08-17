@@ -1,9 +1,10 @@
 # non-rotateable bounding box
-import pysrl.core.types.point as point
-import pysrl.core.draw as draw
 import itertools
 import numpy as np
 import random
+from .image import Image
+from .point import Point
+import pysrl.core.draw as draw
 
 
 class Box:
@@ -11,19 +12,21 @@ class Box:
     Representation of a perfectly square box.
 
     ...
+
     Attributes
     ----------
-        top_left : Point
+        top_left
             top left corner of the box
-        bot_right : Point
+        bot_right
             bottom right corner of the box
-        x0, y0 : int
+        x0, y0
             top left split by dimension
-        x1, y1 : int
+        x1, y1
             bottom right split by dimension
-        width : int
+        width
             the width of the box
-        height : the height of the box
+        height
+            the height of the box
 
     Methods
     -------
@@ -36,7 +39,7 @@ class Box:
         get_point() -> (int, int)
             returns a random point in Self
     """
-    def __init__(self, top_left: point.Point, bot_right: point.Point):
+    def __init__(self, top_left: Point, bot_right: Point):
         self.top_left = top_left  # top left corner
         self.bot_right = bot_right  # bot right corner
         self.x0 = top_left.x
@@ -47,7 +50,8 @@ class Box:
         self.height = self.y1-self.y0
 
     def __str__(self) -> str:
-        return "Box([{}, {}], [{}, {}])".format(self.x0, self.y0, self.x1, self.y1)
+        return "Box([{}, {}], [{}, {}])" \
+               .format(self.x0, self.y0, self.x1, self.y1)
 
     @classmethod
     def from_array(class_object, arr):
@@ -55,9 +59,11 @@ class Box:
         Creates a Box from an array with shape [x0, y0, x1, y1]
         """
         if len(arr) == 4:
-            return class_object(point.Point.from_array(arr[:2]), point.Point.from_array(arr[2:]))
+            return class_object(Point.from_array(arr[:2]),
+                                Point.from_array(arr[2:]))
         else:
-            raise ValueError("Passed array with length {}, needs to be length 4".format(len(arr)))
+            raise ValueError("""Passed array with length {},
+                             needs to be length 4""".format(len(arr)))
 
     def contains(self, points):
         """
@@ -81,23 +87,27 @@ class Box:
         y = random.randrange(self.y0, self.y1)
         return (x, y)
 
-    def get_middle(self) -> point.Point:
-        return (self.top_left + self.bot_right) // point.Point(2, 2)
+    def get_middle(self) -> Point:
+        return (self.top_left + self.bot_right) // Point(2, 2)
 
-    def draw(self, img: np.ndarray, color=[255, 0, 0]):
+    def draw(self, img: Image, color=[255, 0, 0]):
         """
         Draws a box on an image.
 
         Parameters
         ----------
-            img: the image (in numpy form) to be drawn upon
-            color: the color the line should be (default=red)
+            img
+                the image (in numpy form) to be drawn upon
+            color
+                the color the line should be (default=red)
 
         Returns
         -------
-            img: the image (in numpy form) that has been drawn upon
+            img
+                the image that has been drawn upon
 
         """
+        img = img.copy()
         if len(color) != 3:
             raise Exception('Invalid color passed to Box.draw')
         color = np.array(color)

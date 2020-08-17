@@ -3,7 +3,7 @@ import numpy as np
 import numpy.ma as ma
 
 
-class FormatError(Exception):
+class ShapeError(Exception):
     def __init__(self, size: tuple):
         super().__init__('''Expected RGB Bitmap with shape (row, col, 3),
                          got {} instead.'''.format(size))

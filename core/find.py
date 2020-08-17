@@ -12,24 +12,27 @@ from typing import List, Dict
 from pysrl.core.types.box import Box
 from pysrl.core.types.cts import CTS
 from pysrl.core.types.image import Image
+from pysrl.core.types.point_array import PointArray
 
 
-def colors(img: Image, color: CTS, bounds=None) -> np.ndarray:
+def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
     """
     Find locations of pixels in an image within a color range.
 
+    ...
+
     Parameters
     ----------
-        img : np.ndimgay
+        img
             the image to be searched
-        color : CTS1 or CTS2
+        color
             the color range to capture
-        bounds : Box
+        bounds
             the area of the image to search
 
     Returns
     -------
-        points : np.ndimgay
+        points
             a list of points that fall in color range
 
     """
@@ -41,7 +44,7 @@ def colors(img: Image, color: CTS, bounds=None) -> np.ndarray:
     x, y = np.where(np.logical_and(np.all(img <= color.max, 2),
                                    np.all(img >= color.min, 2)))
     points = np.column_stack((x, y))
-    return points
+    return PointArray(points)
 
 
 def _loadfont(font: str) -> Dict[str, np.ndarray]:
