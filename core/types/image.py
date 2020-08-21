@@ -56,8 +56,10 @@ class Image(ma.MaskedArray):
     @classmethod
     def frombytes(class_object, size: tuple, data):
         img = PIL.Image.frombytes('RGB', size, data, 'raw', 'BGRX')
+        img = img.convert('RGB')
         img = ma.array(img, dtype='uint8')
         return class_object(img)
 
     def show(self, title=None):
+        # NOTE: image.show window titles dont work on my machine
         PIL.Image.fromarray(self).show(title)

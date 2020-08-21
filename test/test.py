@@ -1,6 +1,6 @@
 import unittest
 import os
-import pysrl.core.capture as capture
+import pysrl.core.client as client
 import pysrl.core.find as find
 from pysrl.core.types.cts import CTS2
 from pysrl.core.types.image import Image
@@ -16,22 +16,22 @@ if __name__ == '__main__':
 
 class TestClass(unittest.TestCase):
 
-    def test_capture_runelite(self):  # test core/capture.py
+    def test_client_runelite(self):  # test core/client.py
         # TODO: launch runelite automatically
-        cp = capture.Capture(capture.RL_CANVAS)
+        cp = client.Client(client.RL_CANVAS)
         arr = cp.get_image()
         self.assertNotEqual(len(arr), 0)
         if imgshow:
-            Image.fromarray(arr).show("test_capture_runelite")
+            Image.fromarray(arr).show("test_client_runelite")
 
-    def test_capture_simplicity(self):  # test core/capture.py
+    def test_client_simplicity(self):  # test core/client.py
         # TODO: launch simplicity client automatically
         # NOTE: this picks up RuneLite as well
-        cp = capture.Capture(capture.SIMP_CANVAS)
+        cp = client.Client(client.SIMP_CANVAS)
         arr = cp.get_image()
         self.assertNotEqual(len(arr), 0)
         if imgshow:
-            Image.fromarray(arr).show("test_capture_simplicity")
+            Image.fromarray(arr).show("test_client_simplicity")
 
     def test_find_colors(self):  # test core/color.py
         img = Image.open('test/test.jpeg')
@@ -61,31 +61,29 @@ class TestClass(unittest.TestCase):
         self.assertEqual(len(filtered), 1)
 
     def test_find_image(self):  # test core/find.image
-        img = Image.open('test/login.png')
-        # screenshot of img
-        subimg = Image.open('test/login-slice.png')
-        matches = find.image(subimg, img)
+        haystack = Image.open('test/login.png')
+        # screenshot of haystack
+        needle = Image.open('test/login-slice.png')
+        match = find.image(haystack, needle)
         if imgshow:
-            for match in matches:
-                img = match.draw(img)
-            img.show("test_findimage")
-        self.assertEqual(len(matches), 1)
+            haystack = match.draw(haystack)
+            haystack.show("test_find_image")
+        self.assertIsNotNone(match)
 
-    def test_find_imagecv2(self):  # test core/find.imagecv2
-        img = Image.open('test/login2.png')
-        subimg = Image.open('test/login-slice.png')
-        matches = find.imagecv2(subimg, img, 0.8)
+    def test_find_images(self):  # test core/find.imagecv2
+        haystack = Image.open('test/login2.png')
+        needle = Image.open('test/login-slice.png')
+        matches = find.images(haystack, needle, 0.8)
         if imgshow:
             for match in matches:
-                img = match.draw(img)
-            img.show("test_findimagecv2")
+                haystack = match.draw(haystack)
+            haystack.show("test_find_imagecv2")
         self.assertEqual(len(matches), 1)
 
     def test_find_text(self):  # test core/find.text
-        timg = Image.open('test/login-slice.png')
-        matches = find.text('New User', timg)
+        img = Image.open('test/login2.png')
+        match = find.text(img, 'New User')
         if imgshow:
-            for match in matches:
-                timg = match.draw(timg)
-            timg.show("test_findtext")
-        self.assertEqual(len(matches), 1)
+            img = match.draw(img)
+            img.show("test_find_text")
+        self.assertIsNotNone(match)

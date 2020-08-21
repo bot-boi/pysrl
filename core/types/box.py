@@ -85,7 +85,7 @@ class Box:
     def get_point(self) -> (int, int):
         x = random.randrange(self.x0, self.x1)
         y = random.randrange(self.y0, self.y1)
-        return (x, y)
+        return Point(x, y)
 
     def get_middle(self) -> Point:
         return (self.top_left + self.bot_right) // Point(2, 2)

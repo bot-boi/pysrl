@@ -1,5 +1,8 @@
+import pyautogui
 from Xlib import X, error as Xerror
 from pysrl.core.types.image import Image
+from pysrl.core.types.box import Box
+from pysrl.core.types.point import Point
 from ewmh import EWMH
 ewmh = EWMH()
 
@@ -68,6 +71,7 @@ RL_CANVAS = XObjPattern(name="sun-awt-X11-XCanvasPeer")
 SIMP_WINDOW = XObjPattern(name="Simplicity RSPS - The Biggest \
                                 Pre-EOC Server 2020")
 SIMP_CANVAS = XObjPattern(name="sun-awt-X11-XPanelPeer")
+SR_CANVAS = SIMP_CANVAS
 
 
 def findxwindow(pattern: XObjPattern):
@@ -116,7 +120,7 @@ def get_offset(window) -> (int, int):
     return (xoff, yoff)
 
 
-class Capture:  #
+class Client:  #
     def __init__(self, canvas_pattern: XObjPattern):
         # get canvas and its frame and offset relative to root coords
         self.canvas_pattern = canvas_pattern
@@ -144,3 +148,22 @@ class Capture:  #
                                         0xffffffff)
         img = Image.frombytes((g.width, g.height), raw.data)
         return img
+
+    def click(self, target: any, button: str = 'left'):
+        # pseudo function overloading
+        x, y = (0, 0)
+        if type(target) is Point:
+            x = target.x
+            y = target.y
+        elif type(target) is Box:
+            pnt = target.get_point()
+            x = pnt.x
+            y = pnt.y
+        offset = get_offset(self.canvas)
+        x += offset[0]
+        y += offset[1]
+        pyautogui.click((x, y), button=button)
+
+    def type(self, keys):  # keys can be str or List[str]
+        # wrapper for when additional functionality is needed
+        pyautogui.typewrite(keys)

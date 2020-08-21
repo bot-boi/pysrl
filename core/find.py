@@ -7,12 +7,13 @@
 import numpy as np
 import numpy.ma as ma
 import cv2
-import os
-from typing import List, Dict
+from typing import List
 from pysrl.core.types.box import Box
 from pysrl.core.types.cts import CTS
 from pysrl.core.types.image import Image
+from pysrl.core.types.point import Point
 from pysrl.core.types.point_array import PointArray
+from .font import FONTS
 
 
 def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
@@ -47,23 +48,103 @@ def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
     return PointArray(points)
 
 
-def _loadfont(font: str) -> Dict[str, np.ndarray]:
-    path = './SRL-Fonts/{}/'.format(font)
-    fnames = [fname for fname in os.listdir(path) if '.bmp' in fname]
-    raws = [Image.open(path + fname) for fname in fnames]
-    return {chr(int(fname[:-4])): raw for fname, raw in zip(fnames, raws)}
+# TODO: make this fn suck less - WAY too slow, use find.imagecv2 instead
+# def image(haystack: Image, needle: Image) -> List[Box]:
+#     """
+#     Find an image (exactly) within another image.
+#
+#     Parameters
+#     ----------
+#         haystack
+#             the image to be looked in
+#         needle
+#             the image to be found
+#
+#     Returns
+#     -------
+#         matches
+#             bounding boxes around any matches
+#
+#     """
+#     matches = []
+#     # NOTE: height is number of rows, width is number of columns DUH
+#     sheight, swidth, _ = needle.shape
+#     ty, tx, _ = haystack.shape  # total x,y
+#     if swidth > tx or sheight > ty:
+#         raise Exception('Needle is larger than haystack.')
+#     for y in range(ty):  # iterate y 1st cus text travels horizontal
+#         if y+sheight > ty:
+#             break
+#         for x in range(tx):
+#             if x+swidth > tx:
+#                 break
+#             s_haystack = haystack[y: y + sheight, x: x + swidth]
+#             if np.all(needle[0, 0] == s_haystack[0, 0]) or \
+#                np.all(needle[0, 0]) is np.ma.masked:
+#                 if np.all(needle == s_haystack):
+#                 match = Box.from_array([x, y, x+swidth, y+sheight])
+#                     matches.append(match)
+#     return matches
 
 
-def image(needle: Image, haystack: Image) -> List[Box]:
+def image(haystack: Image, needle: Image,
+          method=cv2.TM_CCORR_NORMED) -> Box:
     """
-    Find an image (exactly) within another image.
+    Find a single image (needle) in another image using cv2.
 
+    ...
     Parameters
     ----------
+        haystack
+            the image to be found in
         needle
             the image to be found
+        method
+            the method cv2 uses to compare needle to source
+
+    Returns
+    -------
+        match
+            bounding boxes around the best match
+
+    """
+    # convert to BGR because thats what OPENCV (cv2) uses
+    mask = None
+    if needle.mask:
+        mask = needle.mask
+    needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
+    haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
+    h, w, _ = needle.shape
+    res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+    # loc = np.where(res >= threshold)
+    # min/Max val, min/Max location
+    mval, Mval, mloc, Mloc = cv2.minMaxLoc(res, mask=mask)
+    if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+        top_left = Point.from_array(mloc)
+    else:
+        top_left = Point.from_array(Mloc)
+    bot_right = Point(top_left.x + w, top_left.y + h)
+    match = Box(top_left, bot_right)
+    return match
+
+
+def images(haystack: Image, needle: Image,
+           threshold: float = 0.90,
+           method=cv2.TM_CCORR_NORMED) -> List[Box]:
+    """
+    Find any number of images (needle) in another image using cv2.
+
+    ...
+    Parameters
+    ----------
         haystack
-            the image to be looked in
+            the image to be found in
+        needle
+            the image to be found
+        threshold
+            how closely the needle should match (0-1.0)
+        method
+            the method cv2 uses to compare needle to source
 
     Returns
     -------
@@ -71,83 +152,50 @@ def image(needle: Image, haystack: Image) -> List[Box]:
             bounding boxes around any matches
 
     """
-    matches = []
-    # NOTE: height is number of rows, width is number of columns DUH
-    sheight, swidth, _ = needle.shape
-    ty, tx, _ = haystack.shape  # total x,y
-    if swidth > tx or sheight > ty:
-        raise Exception('Needle is larger than haystack.')
-    for y in range(ty):  # iterate y 1st cus text travels horizontal
-        if y+sheight > ty:
-            break
-        for x in range(tx):
-            if x+swidth > tx:
-                break
-            if np.all(needle == haystack[y:y+sheight, x:x+swidth]):
-                matches.append(Box.from_array([x, y, x+swidth, y+sheight]))
-    return matches
-
-
-def imagecv2(template: Image, target: Image,
-             threshold: float = 0.8,
-             method=cv2.TM_CCOEFF_NORMED) -> List[Box]:
-    """
-    Find an image (template) in another image using cv2.
-
-    Parameters
-    ----------
-        template
-            The image to be found.
-        target
-            The image to be found in.
-        threshold
-            How closely the template should match (0-1.0).
-        method
-            The method cv2 uses to compare template to source.
-
-    Returns
-    -------
-        matches: List[Box]
-            bounding boxes around any matches
-
-    """
-    template = cv2.cvtColor(template, cv2.COLOR_RGB2BGR)
-    target = cv2.cvtColor(target, cv2.COLOR_RGB2BGR)
-    h, w, _ = template.shape
-    res = cv2.matchTemplate(target, template, method)
+    # convert to BGR because thats what OPENCV (cv2) uses
+    mask = None
+    if needle.mask:
+        mask = needle.mask
+    needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
+    haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
+    h, w, _ = needle.shape
+    res = cv2.matchTemplate(haystack, needle, method, mask=mask)
     loc = np.where(res >= threshold)
     matches = []
-    for pt in zip(*loc):
-        matches.append(Box.from_array([pt[0], pt[1], pt[0] + w, pt[1] + h]))
+    for x, y in zip(*loc):
+        bounds = Box.from_array([x, y, x + w, y + h])
+        matches.append(bounds)
     return matches
 
 
 # TODO: figure out why this works with yellow text
 # TODO: fix bug (try finding 'New' in login-slice.png for example)
-def text(txt, target: Image, fontname="UpChars07") -> List[Box]:
+def text(haystack: Image, text: str, fontname: str = "UpChars07") -> List[Box]:
     """
     Find text in an image using a certain font.
 
+    ...
+
     Parameters
     ----------
-        txt : str
-            The text to be found.
-        target
+        haystack
             The image to search for text in.
+        text
+            The text to be found.
         fontname : str
             Font to use.  See the SRL-Fonts directory for options.
 
     Returns
     -------
-        matches: List[Box]
+        matches
             location data of text
 
     """
-    target = ma.array(target, mask=target != [255, 255, 255])
-    font = _loadfont(fontname)
+    haystack = Image(ma.array(haystack, mask=haystack != [255, 255, 255]))
+    font = FONTS[fontname]
     height = font['a'].shape[0]
-    txtimg = np.zeros((height, 1, 3), dtype='uint8')
-    for c in txt:
-        txtimg = np.concatenate((txtimg, font[c]), axis=1)
-    txtimg = Image(txtimg)
-    return image(txtimg, target)
+    textimg = np.zeros((height, 1, 3), dtype='uint8')
+    for c in text:
+        textimg = np.concatenate((textimg, font[c]), axis=1)
+    textimg = Image(textimg)
+    return image(haystack, textimg)  # find.image, not Image

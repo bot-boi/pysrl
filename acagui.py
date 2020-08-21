@@ -5,8 +5,6 @@ import io
 import time
 import pyperclip
 import numpy as np
-import pysrl.core.types.point_array as pa
-import pysrl.core.types.point_array2d as pa2d
 import pysrl.core.find as find
 from ast import literal_eval
 from PIL import Image
@@ -119,18 +117,17 @@ while True:
         t2 = time.time()
         pts = find.colors(current_img, color)
         t3 = time.time()
-        clusters = pa.cluster(pts, cluster)
+        clusters = pts.cluster(cluster)
         t4 = time.time()
-        clusters = pa2d.filtersize(clusters, mf, Mf)
+        clusters = clusters.filtersize(mf, Mf)
         t5 = time.time()
-        tstr = 'CTS2 creation: {}\n'.format(str(t2 - t1))
-        tstr += 'color finding: {}\n'.format(str(t3 - t2))
+        tstr = 'color finding: {}\n'.format(str(t3 - t2))
         tstr += 'cluster: {}\n'.format(str(t4 - t3))
         tstr += 'filter: {}\n'.format(str(t5 - t4))
-        tstr += 'total (w/out CTS2): {}'.format(str(t5 - t2))
+        tstr += 'total: {}'.format(str(t5 - t2))
         foundin = window.Element('foundin')
         foundin.update(value=tstr)
-        drawn_img = Image.fromarray(pa2d.draw(current_img, clusters))
+        drawn_img = Image.fromarray(clusters.draw(current_img))
         # for b in boxes:
         #   drawn_img = b.draw(drawn_img)
         img_str = bufferimage(drawn_img)
