@@ -38,6 +38,9 @@ class XObjPattern:
         self.id = ID
         self.name = name
 
+    def __str__(self) -> str:
+        return 'XObjPattern: {}'.format(self.name)
+
     def match(self, other) -> bool:
         """
         Checks if pattern and XWindow object match
@@ -108,7 +111,7 @@ def get_frame(window):
     return window
 
 
-def get_offset(window) -> (int, int):
+def get_offset(window) -> Point:
     # get x,y offset of a window relative to root
     xoff = 0
     yoff = 0
@@ -117,16 +120,25 @@ def get_offset(window) -> (int, int):
         xoff += g.x
         yoff += g.y
         window = window.query_tree().parent
-    return (xoff, yoff)
+    return Point(xoff, yoff)
 
 
-class Client:  #
+class Client:
+    def update(self):
+        try:
+            self.canvas = findxwindow(self.canvas_pattern)[0]
+            self.frame = get_frame(self.canvas)
+            self.offset = get_offset(self.canvas)
+        except IndexError:
+            print('Failed to find canvas: {}'.format(str(self.canvas_pattern)))
+
     def __init__(self, canvas_pattern: XObjPattern):
         # get canvas and its frame and offset relative to root coords
         self.canvas_pattern = canvas_pattern
-        self.canvas = findxwindow(self.canvas_pattern)[0]
-        self.frame = get_frame(self.canvas)
-        self.offset = get_offset(self.canvas)
+        self.canvas = None
+        self.frame = None
+        self.offset: Point = None
+        self.update()
 
     def get_image(self) -> Image:
         # get the shape of the window and reload canvas if it fails
@@ -134,8 +146,7 @@ class Client:  #
         try:
             g = self.canvas.get_geometry()
         except Xerror.BadDrawable or Xerror.BadMatch:
-            print("bad drawable")
-            self.canvas = findxwindow(self.canvas_pattern)[0]
+            self.update()
             g = self.canvas.get_geometry()
         raw = self.canvas.get_image(0, 0, g.width, g.height, X.ZPixmap,
                                     0xffffffff)
@@ -143,7 +154,7 @@ class Client:  #
             # case: window covered
             # TODO: handle minimized window?
             ewmh.setActiveWindow(self.frame)
-            ewmh.display.flush()  # force targeted window to top
+            ewmh.display.flush()  # force targeted window to top -- doesnt work
             raw = self.canvas.get_image(0, 0, g.width, g.height, X.ZPixmap,
                                         0xffffffff)
         img = Image.frombytes((g.width, g.height), raw.data)
@@ -160,8 +171,8 @@ class Client:  #
             x = pnt.x
             y = pnt.y
         offset = get_offset(self.canvas)
-        x += offset[0]
-        y += offset[1]
+        x += offset.x
+        y += offset.y
         pyautogui.click((x, y), button=button)
 
     def type(self, keys):  # keys can be str or List[str]

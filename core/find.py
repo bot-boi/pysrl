@@ -37,15 +37,18 @@ def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
             a list of points that fall in color range
 
     """
-    (h, w, _) = np.shape(img)
+    (h, w, _) = img.shape
     if bounds is None:
         bounds = Box.from_array([0, 0, w, h])
     b = bounds
     img = img[b.y0:b.y1, b.x0:b.x1]  # apply bounds
+    (h, w, _) = img.shape
     x, y = np.where(np.logical_and(np.all(img <= color.max, 2),
                                    np.all(img >= color.min, 2)))
+    x = np.add(x, b.x0)
+    y = np.add(y, b.y0)
     points = np.column_stack((x, y))
-    return PointArray(points)
+    return points.view(PointArray)
 
 
 # TODO: make this fn suck less - WAY too slow, use find.imagecv2 instead
@@ -110,15 +113,14 @@ def image(haystack: Image, needle: Image,
     """
     # convert to BGR because thats what OPENCV (cv2) uses
     mask = None
-    if needle.mask:
-        mask = needle.mask
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
+    if ma.is_masked(needle):
+        mask = needle.mask.astype('uint8')  # needs to be i8 or f32
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
     res = cv2.matchTemplate(haystack, needle, method, mask=mask)
-    # loc = np.where(res >= threshold)
     # min/Max val, min/Max location
-    mval, Mval, mloc, Mloc = cv2.minMaxLoc(res, mask=mask)
+    mval, Mval, mloc, Mloc = cv2.minMaxLoc(res)
     if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
         top_left = Point.from_array(mloc)
     else:
@@ -154,9 +156,9 @@ def images(haystack: Image, needle: Image,
     """
     # convert to BGR because thats what OPENCV (cv2) uses
     mask = None
-    if needle.mask:
-        mask = needle.mask
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
+    if ma.is_masked(needle):
+        mask = needle.mask.astype('uint8')  # needs to be i8 or f32
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
     res = cv2.matchTemplate(haystack, needle, method, mask=mask)

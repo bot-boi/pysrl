@@ -12,9 +12,8 @@ class PointArray(ma.MaskedArray):
     def __new__(class_object, data: np.ndarray):
         if data.shape[1] != 2:
             raise NumpyShapeError('(rows, 2)', data.shape)
-        obj = super().__new__(class_object, data, dtype='uint8') \
-            .view(class_object)
-        return obj
+        return super(PointArray, class_object). \
+            __new__(class_object, data=data, dtype='uint8')
 
     def __array_finalize__(self, obj):
         if obj is None:
@@ -40,9 +39,7 @@ class PointArray(ma.MaskedArray):
         return Box(Point(mx, my), Point(Mx, My))
 
     # clustering algorithm by benland100
-    def cluster(self: np.ndarray, radius=5,
-                bnds: Box = None) -> PointArray2D:
-
+    def cluster(self, radius=5, bnds: Box = None) -> PointArray2D:
         if bnds is not None:
             self = bnds.contains(self)
         clusters = np.zeros(len(self), dtype='uint32')
@@ -72,10 +69,10 @@ class PointArray(ma.MaskedArray):
                 clusters[clusters == g] = G
         unique, counts = np.unique(clusters, return_counts=True)
         cluster_points = np.array([self[clusters == c] for c in unique])
-        return PointArray2D(cluster_points)  # , counts
+        return cluster_points.view(PointArray2D)  # , counts
 
     def draw(self, img: Image, color=[255, 0, 0]) -> Image:
         img = img.copy()
         for p in self:
-            img[p[0], p[1]] = color
+            img[p[1], p[0]] = color
         return img

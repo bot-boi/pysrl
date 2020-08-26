@@ -1,6 +1,7 @@
-import PIL.Image
+import PIL
 import numpy as np
 import numpy.ma as ma
+# import png
 
 
 class ShapeError(Exception):
@@ -59,6 +60,12 @@ class Image(ma.MaskedArray):
         img = img.convert('RGB')
         img = ma.array(img, dtype='uint8')
         return class_object(img)
+
+    def save(self, fname='untitled'):
+        if '.' in fname:
+            fname = fname.split()[0]
+        PIL.Image.fromarray(self).save(fname)
+        # png.from_array(self, mode='RGB').save(fname + '.png')
 
     def show(self, title=None):
         # NOTE: image.show window titles dont work on my machine

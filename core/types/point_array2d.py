@@ -6,11 +6,12 @@ from .image import Image
 
 
 class PointArray2D(ma.MaskedArray):
-    def __new__(class_object, data: np.ndarray):
+    def __new__(class_object, data):
+        print(ma.shape(data))
         if data.shape[2] != 2:
             raise NumpyShapeError('(parray, point, x/y)', data.shape)
-        obj = super().__new__(class_object, data, dtype='uint8') \
-            .view(class_object)
+        obj = super(PointArray2D, class_object) \
+            .__new__(class_object, data, dtype='uint8')
         return obj
 
     def __array_finalize__(self, obj):

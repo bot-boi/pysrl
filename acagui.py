@@ -8,6 +8,7 @@ import numpy as np
 import pysrl.core.find as find
 from ast import literal_eval
 from PIL import Image
+import PIL
 from pysrl.core.types.cts import CTS2
 
 
@@ -132,9 +133,11 @@ while True:
         #   drawn_img = b.draw(drawn_img)
         img_str = bufferimage(drawn_img)
         e.DrawImage(data=img_str, location=(0, 0))
+
     if eraseflag:
         # revert from drawn img (not saved) to the original
         e = window.Element('imgview')
         e.erase()
         e.DrawImage(data=bufferimage(current_img), location=(0, 0))
+
 window.close()
