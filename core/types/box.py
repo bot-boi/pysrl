@@ -116,6 +116,8 @@ class Box:
         l2 = draw.line(self.x1, self.y1, self.x1, self.y0)
         l3 = draw.line(self.x1, self.y1, self.x0, self.y1)
         square = itertools.chain(l0, l1, l2, l3)
+        h, w, _ = img.shape
         for x, y in square:
-            img[y][x] = color
+            if y >= 0 and y < h and x >= 0 and x < w:
+                img[y][x] = color
         return img

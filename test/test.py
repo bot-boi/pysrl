@@ -4,7 +4,6 @@ import pysrl.core.client as client
 import pysrl.core.find as find
 from pysrl.core.types.cts import CTS2
 from pysrl.core.types.image import Image
-from pysrl.core.types.point_array2d import PointArray2D
 
 
 # setting for showing test results to user
@@ -55,7 +54,7 @@ class TestClass(unittest.TestCase):
         cts = CTS2([0, 0, 0], 10, 10, 10)
         pts = find.colors(img, cts)
         clusters = pts.cluster(2)
-        filtered = PointArray2D(clusters.filtersize(50, 3000))
+        filtered = clusters.filtersize(50, 3000)
         if imgshow:
             filtered.draw(img).show('test_pa2d_filter')
         self.assertEqual(len(filtered), 1)
@@ -73,12 +72,32 @@ class TestClass(unittest.TestCase):
     def test_find_images(self):  # test core/find.imagecv2
         haystack = Image.open('test/login2.png')
         needle = Image.open('test/login-slice.png')
-        matches = find.images(haystack, needle, 0.8)
+        matches = find.images(haystack, needle, threshold=0.95)
         if imgshow:
             for match in matches:
                 haystack = match.draw(haystack)
             haystack.show("test_find_imagecv2")
         self.assertEqual(len(matches), 1)
+
+    # def test_find_image_exact(self):
+    #     haystack = Image.open('test/login2.png')
+    #     needle = Image.open('test/login-slice.png')
+    #     matches = find.image_exact(haystack, needle)
+    #     if imgshow:
+    #         for match in matches:
+    #             haystack = match.draw(haystack)
+    #         haystack.show("test_find_image_exact")
+    #     self.assertEqual(len(matches), 1)
+
+    def test_find_image_masked(self):
+        img = Image.open('./scripts/scaperune/images/older.png')
+        mmap = Image.open('./scripts/scaperune/images/minimap-border.png')
+        mmap.mask = mmap == [0, 0, 0]  # mask transparent aka black values
+        matches = find.image_exact(img, mmap)
+        print(len(matches))
+        for match in matches:
+            img = match.draw(img)
+        img.show()
 
     def test_find_text(self):  # test core/find.text
         img = Image.open('test/login2.png')
@@ -87,3 +106,10 @@ class TestClass(unittest.TestCase):
             img = match.draw(img)
             img.show("test_find_text")
         self.assertIsNotNone(match)
+
+
+def run_tests():  # so i can tests with pdb.run
+    suite = unittest.TestSuite()
+    suite.addTest(TestClass('test_find_image_masked'))
+    runner = unittest.TextTestRunner()
+    runner.run(suite)

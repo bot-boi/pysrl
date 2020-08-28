@@ -31,8 +31,7 @@ class Image(ma.MaskedArray):
             create a Image from a bytes object
     """
     def __new__(class_object, data: np.ndarray):
-        obj = super().__new__(class_object, data, dtype='uint8') \
-            .view(class_object)
+        obj = super().__new__(class_object, data, dtype='uint8')
         # obj.attr = None
         return obj
 

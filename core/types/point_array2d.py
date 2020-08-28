@@ -21,16 +21,16 @@ class PointArray2D(ma.MaskedArray):
 
     # TODO: make this return a PointArray2D
     def filtersize(self, m, M):  # removes clusters outside range m/M
-        for i, pa in enumerate(self):
-            length = len(pa)
-            if length < m and length > M:
-                self.mask[i] = True
-        return self
+        sizes = np.array([len(pa) for pa in self])  # cluster sizes
+        m1 = sizes < m
+        m2 = sizes > M
+        mask = ~(m1 | m2)
+        return self[mask]
 
     def draw(self, img: Image) -> Image:
         img = img.copy()
         for c in self:
             color = np.random.randint(0, 255, 3, dtype="uint8")
             for p in c:
-                img[p[0], p[1]] = color
+                img[p[1], p[0]] = color
         return img

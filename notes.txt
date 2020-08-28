@@ -3,3 +3,11 @@
 - i found a weird bug where Image.__init__ undid changes to the data
 	being passed to it.  using ndarray.view(Image) was the solution
 - i should rework ACA (acagui.py) because its messy and doesnt work great
+
+
+8/27/20
+- couldnt get masks to work with cv2 image finding, removed
+- added original image finding fn back as image_exact
+	very slow but supporting masks was easy
+- need a text drawing function
+- gave pa2d.filtersize a proper implementation

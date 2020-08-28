@@ -51,45 +51,6 @@ def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
     return points.view(PointArray)
 
 
-# TODO: make this fn suck less - WAY too slow, use find.imagecv2 instead
-# def image(haystack: Image, needle: Image) -> List[Box]:
-#     """
-#     Find an image (exactly) within another image.
-#
-#     Parameters
-#     ----------
-#         haystack
-#             the image to be looked in
-#         needle
-#             the image to be found
-#
-#     Returns
-#     -------
-#         matches
-#             bounding boxes around any matches
-#
-#     """
-#     matches = []
-#     # NOTE: height is number of rows, width is number of columns DUH
-#     sheight, swidth, _ = needle.shape
-#     ty, tx, _ = haystack.shape  # total x,y
-#     if swidth > tx or sheight > ty:
-#         raise Exception('Needle is larger than haystack.')
-#     for y in range(ty):  # iterate y 1st cus text travels horizontal
-#         if y+sheight > ty:
-#             break
-#         for x in range(tx):
-#             if x+swidth > tx:
-#                 break
-#             s_haystack = haystack[y: y + sheight, x: x + swidth]
-#             if np.all(needle[0, 0] == s_haystack[0, 0]) or \
-#                np.all(needle[0, 0]) is np.ma.masked:
-#                 if np.all(needle == s_haystack):
-#                 match = Box.from_array([x, y, x+swidth, y+sheight])
-#                     matches.append(match)
-#     return matches
-
-
 def image(haystack: Image, needle: Image,
           method=cv2.TM_CCORR_NORMED) -> Box:
     """
@@ -112,13 +73,10 @@ def image(haystack: Image, needle: Image,
 
     """
     # convert to BGR because thats what OPENCV (cv2) uses
-    mask = None
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
-    if ma.is_masked(needle):
-        mask = needle.mask.astype('uint8')  # needs to be i8 or f32
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
-    res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+    res = cv2.matchTemplate(haystack, needle, method)
     # min/Max val, min/Max location
     mval, Mval, mloc, Mloc = cv2.minMaxLoc(res)
     if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -131,7 +89,7 @@ def image(haystack: Image, needle: Image,
 
 
 def images(haystack: Image, needle: Image,
-           threshold: float = 0.90,
+           threshold: float = 0.8,
            method=cv2.TM_CCORR_NORMED) -> List[Box]:
     """
     Find any number of images (needle) in another image using cv2.
@@ -155,18 +113,56 @@ def images(haystack: Image, needle: Image,
 
     """
     # convert to BGR because thats what OPENCV (cv2) uses
-    mask = None
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
-    if ma.is_masked(needle):
-        mask = needle.mask.astype('uint8')  # needs to be i8 or f32
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
-    res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+    res = cv2.matchTemplate(haystack, needle, method)
     loc = np.where(res >= threshold)
     matches = []
     for x, y in zip(*loc):
         bounds = Box.from_array([x, y, x + w, y + h])
         matches.append(bounds)
+    return matches
+
+
+# TODO: make this fn suck less - WAY too slow, use find.imagecv2 instead
+def image_exact(haystack: Image, needle: Image) -> List[Box]:
+    """
+    Find an image (exactly) within another image.
+
+    Parameters
+    ----------
+        haystack
+            the image to be looked in
+        needle
+            the image to be found
+
+    Returns
+    -------
+        matches
+            bounding boxes around any matches
+
+    """
+    matches = []
+    needle = needle.copy()
+    needle[np.where(needle.mask is True)] = [0, 0, 0]
+    sheight, swidth, _ = needle.shape
+    ty, tx, _ = haystack.shape  # total x,y
+    if swidth > tx or sheight > ty:
+        raise Exception('Needle is larger than haystack.')
+    for y in range(ty):  # iterate y 1st cus text travels horizontal
+        if y+sheight > ty:
+            break
+        for x in range(tx):
+            if x+swidth > tx:
+                break
+            s_haystack = haystack.copy()[y: y + sheight, x: x + swidth]
+            s_haystack[np.where(needle.mask is True)] = [0, 0, 0]
+            needle.mask = False  # remove the mask cus we dont need it no more
+            if np.all(needle[0, 0] == s_haystack[0, 0]):
+                if np.all(needle == s_haystack):
+                    match = Box.from_array([x, y, x+swidth, y+sheight])
+                    matches.append(match)
     return matches
 
 
