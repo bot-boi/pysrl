@@ -1,7 +1,6 @@
-import PIL
+import PIL.Image
 import numpy as np
 import numpy.ma as ma
-# import png
 
 
 class ShapeError(Exception):
@@ -30,28 +29,33 @@ class Image(ma.MaskedArray):
         frombytes(bytes)
             create a Image from a bytes object
     """
-    def __new__(class_object, data: np.ndarray):
-        obj = super().__new__(class_object, data, dtype='uint8')
-        # obj.attr = None
+    def __new__(cls, data: np.ndarray, alpha_mask=False):
+        obj = super(Image, cls).__new__(cls, data, dtype='uint8')
+        obj.alpha_mask = alpha_mask
         return obj
 
     def __array_finalize__(self, obj):
-        if obj is None:
-            return
-        # Note that it is here, rather than in the __new__ method,
-        # that we set the default value for 'attr', because this
-        # method sees all creation of default objects - with the
-        # MaskedArray.__new__ constructor, but also with
-        # arr.view(InfoArray).
-        # self.attr = getattr(obj, 'attr', None)
-        # We do not need to return anything
+        if obj is None: return
+        self.alpha_mask = getattr(obj, 'alpha_mask', False)
         super().__array_finalize__(obj)
 
     @classmethod
-    def open(class_object, fname: str):
-        img = PIL.Image.open(fname).convert('RGB')
+    def open(class_object, fname: str, alpha_mask=False):
+        img = PIL.Image.open(fname)
+        mask = None
+        if alpha_mask:
+            npimg = np.array(img)
+            alpha_channel = npimg[..., 3]  # we only care about alpha values
+            mask = np.zeros(npimg.shape).astype(bool)  # empty mask
+            mask = mask[..., :3]
+            mask[np.nonzero(alpha_channel)] = True  # mask all opaque values
+            mask = np.invert(mask)  # invert mask values
+
+        img = img.convert('RGB')
         img = ma.array(img, dtype='uint8')
-        return class_object(img)
+        cls = class_object(img, alpha_mask=alpha_mask)
+        cls.mask = mask
+        return cls
 
     @classmethod
     def frombytes(class_object, size: tuple, data):

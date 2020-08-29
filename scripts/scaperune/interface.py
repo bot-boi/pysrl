@@ -1,8 +1,8 @@
 from pysrl.core.types.box import Box
+from pysrl.core.types.circle import Circle
 from pysrl.core.types.cts import CTS2
 from pysrl.core.types.point import Point
 from pysrl.core.client import Client, SR_CANVAS
-
 from pysrl.core.types.image import Image
 import pysrl.core.find as find
 from typing import List
@@ -16,7 +16,7 @@ class Chatbox(Box):
     pass
 
 
-class Compass(Box):
+class Compass(Circle):
     def set_north(self):
         pass
 
@@ -25,16 +25,7 @@ class Mainscreen(Box):
     pass
 
 
-class Minimap(Box):
-    @classmethod
-    def from_image(obj):
-        img = Image.open('./scripts/scaperune/images/fullblah.png')
-        border = Image.open('./scripts/scaperune/images/minimap-border.png')
-        border.mask = border == [0, 0, 0]
-        matches = find.images(img, border)
-        for match in matches:
-            img = match.draw(img)
-        img.show()
+class Minimap(Circle):
     pass
 
 
@@ -97,6 +88,7 @@ btns.append(Button.from_array([697, 496, 722, 525]))  # emotes
 btns.append(Button.from_array([729, 496, 757, 522]))  # music player
 
 
+# INVENTORY SLOTS
 inv_slots = []  # inventory slots
 # row 1
 inv_slots.append(Slot.from_array([564, 215, 594, 245]))  # slot 0,0
@@ -135,12 +127,18 @@ inv_slots.append(Slot.from_array([646, 433, 680, 460]))
 inv_slots.append(Slot.from_array([690, 431, 722, 460]))
 
 
+# INVENTORY
 interface_tabs_boxr = [552, 205, 733, 464]  # interface tab box raw
 inv_button = Button.from_array([628, 170, 658, 201])
 inventory = Inventory(interface_tabs_boxr, inv_button, inv_slots)
 
 
+# MINIMAP/COMPASS
+mmap_pos = Point(643, 83)  # center of mmap
+comp_pos = Point(561, 20)  # center of compass
+minimap = Minimap(mmap_pos, 72)
+compass = Compass(comp_pos, 15)
+testimg = Image.open('/home/not-here/Projects/pysrl/scripts/scaperune/images/blah.png')
+
 chatbox = Chatbox.from_array([4, 368, 517, 503])
-compass = Compass.from_array([536, 0, 584, 43])
 mainscreen = Box.from_array([4, 4, 516, 338])
-# minimap = Minimap(Point(644, 84), 74)

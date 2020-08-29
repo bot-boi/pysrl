@@ -4,16 +4,15 @@
 # char file names/ids are ascii values
 # yellow chars = (255, 255, 0)
 # white chars = (255, 255, 255)
-import numpy as np
-import numpy.ma as ma
 import cv2
+import numpy as np
+import pysrl.util
 from typing import List
 from pysrl.core.types.box import Box
 from pysrl.core.types.cts import CTS
 from pysrl.core.types.image import Image
 from pysrl.core.types.point import Point
 from pysrl.core.types.point_array import PointArray
-from .font import FONTS
 
 
 def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
@@ -43,11 +42,9 @@ def colors(img: Image, color: CTS, bounds: Box = None) -> PointArray:
     b = bounds
     img = img[b.y0:b.y1, b.x0:b.x1]  # apply bounds
     (h, w, _) = img.shape
-    x, y = np.where(np.logical_and(np.all(img <= color.max, 2),
+    y, x = np.where(np.logical_and(np.all(img <= color.max, 2),
                                    np.all(img >= color.min, 2)))
-    x = np.add(x, b.x0)
-    y = np.add(y, b.y0)
-    points = np.column_stack((x, y))
+    points = np.column_stack((x, y))  # x,y order for PointArrays
     return points.view(PointArray)
 
 
@@ -73,10 +70,17 @@ def image(haystack: Image, needle: Image,
 
     """
     # convert to BGR because thats what OPENCV (cv2) uses
+    alpha_mask = needle.alpha_mask
+    mask = needle.mask
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
-    res = cv2.matchTemplate(haystack, needle, method)
+    res = None
+    if alpha_mask:
+        mask = ~mask.astype('uint8')
+        res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+    else:
+        res = cv2.matchTemplate(haystack, needle, method)
     # min/Max val, min/Max location
     mval, Mval, mloc, Mloc = cv2.minMaxLoc(res)
     if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -113,11 +117,24 @@ def images(haystack: Image, needle: Image,
 
     """
     # convert to BGR because thats what OPENCV (cv2) uses
+    # does not support masks like find.image does...
+    # alpha_mask = needle.alpha_mask
+    # mask = needle.mask
     needle = cv2.cvtColor(needle, cv2.COLOR_RGB2BGR)  # np arrays
     haystack = cv2.cvtColor(haystack, cv2.COLOR_RGB2BGR)
     h, w, _ = needle.shape
     res = cv2.matchTemplate(haystack, needle, method)
-    loc = np.where(res >= threshold)
+    # res = None
+    # if alpha_mask:
+    #     mask = ~mask.astype('uint8')
+    #     res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+    # else:
+    #     res = cv2.matchTemplate(haystack, needle, method)
+    loc = None
+    if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+        loc = np.where(res <= threshold)
+    else:
+        loc = np.where(res >= threshold)
     matches = []
     for x, y in zip(*loc):
         bounds = Box.from_array([x, y, x + w, y + h])
@@ -151,17 +168,17 @@ def image_exact(haystack: Image, needle: Image) -> List[Box]:
     if swidth > tx or sheight > ty:
         raise Exception('Needle is larger than haystack.')
     for y in range(ty):  # iterate y 1st cus text travels horizontal
-        if y+sheight > ty:
+        if y + sheight > ty:
             break
         for x in range(tx):
-            if x+swidth > tx:
+            if x + swidth > tx:
                 break
             s_haystack = haystack.copy()[y: y + sheight, x: x + swidth]
             s_haystack[np.where(needle.mask is True)] = [0, 0, 0]
             needle.mask = False  # remove the mask cus we dont need it no more
             if np.all(needle[0, 0] == s_haystack[0, 0]):
                 if np.all(needle == s_haystack):
-                    match = Box.from_array([x, y, x+swidth, y+sheight])
+                    match = Box.from_array([x, y, x + swidth, y + sheight])
                     matches.append(match)
     return matches
 
@@ -189,11 +206,5 @@ def text(haystack: Image, text: str, fontname: str = "UpChars07") -> List[Box]:
             location data of text
 
     """
-    haystack = Image(ma.array(haystack, mask=haystack != [255, 255, 255]))
-    font = FONTS[fontname]
-    height = font['a'].shape[0]
-    textimg = np.zeros((height, 1, 3), dtype='uint8')
-    for c in text:
-        textimg = np.concatenate((textimg, font[c]), axis=1)
-    textimg = Image(textimg)
+    textimg = pysrl.util.text_to_img(text, fontname)
     return image(haystack, textimg)  # find.image, not Image

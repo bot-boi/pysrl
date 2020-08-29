@@ -104,6 +104,11 @@ def findxwindow(pattern: XObjPattern):
     return matches
 
 
+def is_window(wname: str) -> bool:
+    p = XObjPattern(name=wname)
+    return len(findxwindow(p)) > 0
+
+
 def get_frame(window):
     # get window manager frame of window
     while window.query_tree().parent.id != ewmh.root.id:

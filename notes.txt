@@ -11,3 +11,13 @@
 	very slow but supporting masks was easy
 - need a text drawing function
 - gave pa2d.filtersize a proper implementation
+
+8/28/20
+- added more convenience to circle and box types
+- changed minimap and compass back to circles
+- made core/fonts use absolute path
+	dont use relative paths for non-python files
+	maybe dont use relative paths at all...
+- added util file with text/image drawing
+- add transparent channel masks for cv2 image finding?
+	at least try it ...

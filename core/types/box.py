@@ -82,6 +82,9 @@ class Box:
                          if p[0] >= self.x0 and p[0] <= self.x1
                          and p[1] >= self.y0 and p[1] <= self.y1])
 
+    def get_image_slice(self, img: Image):
+        return img[self.y0: self.y1, self.x0: self.x1]
+
     def get_point(self) -> (int, int):
         x = random.randrange(self.x0, self.x1)
         y = random.randrange(self.y0, self.y1)
