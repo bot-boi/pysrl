@@ -1,11 +1,15 @@
+from typing import List
+
+import numpy.ma as ma
+
+import pysrl.core.find as find
+from pysrl.core.client import SR_CANVAS, Client
 from pysrl.core.types.box import Box
 from pysrl.core.types.circle import Circle
 from pysrl.core.types.cts import CTS2
-from pysrl.core.types.point import Point
-from pysrl.core.client import Client, SR_CANVAS
 from pysrl.core.types.image import Image
-import pysrl.core.find as find
-from typing import List
+from pysrl.core.types.point import Point
+from pysrl.util import draw_image
 
 
 class Button(Box):
@@ -25,8 +29,25 @@ class Mainscreen(Box):
     pass
 
 
-class Minimap(Circle):
-    pass
+class Minimap(Box):
+    def __init__(self, p1: Point, mask: str = './test/minimap-border.png'):
+        masked_img = Image.open(mask, alpha_mask=True)
+        self.mask = masked_img.mask  # we want the mask only
+        h, w, _ = self.mask.shape
+        p2 = Point(p1.x + w, p1.y + h)
+        super().__init__(p1, p2)
+
+    def debug(self, img: Image) -> Image:
+        img = self.draw(img)
+        maskimg = ma.zeros(self.mask.shape)
+        maskimg.mask = self.mask
+        img = draw_image(img, maskimg, self.top_left)
+        return img
+
+    def get_image(self, img: Image) -> Image:
+        img = self.get_image_slice(img)
+        img.mask = self.mask
+        return img
 
 
 class Slot(Box):
@@ -136,9 +157,11 @@ inventory = Inventory(interface_tabs_boxr, inv_button, inv_slots)
 # MINIMAP/COMPASS
 mmap_pos = Point(643, 83)  # center of mmap
 comp_pos = Point(561, 20)  # center of compass
-minimap = Minimap(mmap_pos, 72)
+minimap = Minimap(Point(545, 3))
 compass = Compass(comp_pos, 15)
-testimg = Image.open('/home/not-here/Projects/pysrl/scripts/scaperune/images/blah.png')
-
+testimg = Image.open(
+    '/home/not-here/Projects/pysrl/scripts/scaperune/images/blah.png'
+)
+minimap.debug(testimg).show()
 chatbox = Chatbox.from_array([4, 368, 517, 503])
 mainscreen = Box.from_array([4, 4, 516, 338])

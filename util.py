@@ -17,7 +17,8 @@ def draw_image(src: Image, insert: Image, pos: Point) -> Image:
         xs = range(0, i_w)
         for y in ys:
             for x in xs:
-                src[y + i_h, x + i_w] = insert[y, x]
+                if not np.all(insert.mask[y, x]):
+                    src[pos.y + y, pos.x + x] = insert[y, x]
     return src
 
 
