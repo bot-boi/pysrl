@@ -77,8 +77,12 @@ def image(haystack: Image, needle: Image,
     h, w, _ = needle.shape
     res = None
     if alpha_mask:
-        mask = ~mask.astype('uint8')
+        mask = mask.astype('uint8')
+        nonzero = np.nonzero(mask)  # invert mask
+        mask[mask == 1] = 0         # dont use ~ or np.invert
+        mask[nonzero] = 1           # cus they overflow/underflow...
         res = cv2.matchTemplate(haystack, needle, method, mask=mask)
+        # pysrl.util.show_cv2_result(res)
     else:
         res = cv2.matchTemplate(haystack, needle, method)
     # min/Max val, min/Max location

@@ -1,5 +1,5 @@
 import numpy as np
-
+from matplotlib import pyplot as plt
 from pysrl.core.font import FONTS
 from pysrl.core.types.image import Image
 from pysrl.core.types.point import Point
@@ -43,3 +43,8 @@ def draw_text(img: Image, text: str, pos: Point,
     for p in points:
         img[p[0] + pos.y, p[1] + pos.x] = color
     return img
+
+
+def show_cv2_result(res):
+    plt.imshow(res, cmap='gray')
+    plt.show()

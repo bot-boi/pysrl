@@ -2,6 +2,7 @@ import os
 import unittest
 
 import cv2
+from pysrl.core.types.point import Point
 
 import pysrl.core.client as client
 import pysrl.core.find as find
@@ -135,7 +136,8 @@ class TestClass(unittest.TestCase):
     #                       alpha_mask=True)
     #     img = Image.open('test/test-mmap.png')
     #     # cv2.TM_CCORR_NORMED didnt work here...
-    #     matches = find.images(img, mmap, threshold=25000.0, method=cv2.TM_SQDIFF)
+    #     matches = find.images(img, mmap, threshold=25000.0,
+    #                           method=cv2.TM_SQDIFF)
     #     if imgshow:
     #         for match in matches:
     #             img = match.draw(img)
@@ -151,3 +153,20 @@ class TestClass(unittest.TestCase):
             img = match.draw(img)
             img.show()
         self.assertIsNotNone(match)
+
+    def test_find_minimap(self):
+        pass
+
+    def test_find_map_position(self):
+        from pysrl.scripts.scaperune.interface import minimap
+        map_img = Image.open('test/osrs-world-map.png')
+        screen_img = Image.open('test/older2.png')
+        mmap_img = minimap.get_image(screen_img)
+        match = find.image(map_img, mmap_img,
+                           method=cv2.TM_SQDIFF)
+        if imgshow:
+            map_img = draw_text(map_img, "test_find_map_position", (0, 0))
+            map_img = draw_text(map_img, str(match), (0, 15))
+            match.draw(map_img).show()
+        self.assertIsNotNone(match)
+        self.assertEqual(match.top_left, Point(4520, 3184))

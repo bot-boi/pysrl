@@ -13,17 +13,20 @@ class Point():
     def from_array(class_object, arr):
         return class_object(arr[0], arr[1])
 
+    def __eq__(self, other) -> bool:
+        return (self.x == other.x and self.y == other.y)
+
     def __str__(self) -> str:
         return "Point({}, {})".format(self.x, self.y)
 
     def __add__(self, other):
-        return Point(self.x+other.x, self.y+other.y)
+        return Point(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
-        return Point(self.x-other.x, self.y-other.y)
+        return Point(self.x - other.x, self.y - other.y)
 
     def __mul__(self, other):
-        return Point(self.x*other.x, self.y*other.y)
+        return Point(self.x * other.x, self.y * other.y)
 
     def __floordiv__(self, other):
         return Point(self.x // other.x, self.y // other.y)
@@ -43,8 +46,8 @@ class Point():
         y = self.y  # handle out of bounds cases
         mx = x - off if x >= off else 0
         my = y - off if y >= off else 0
-        Mx = x + off if x+off <= xb else xb
-        My = y + off if x+off <= yb else yb
+        Mx = x + off if x + off <= xb else xb
+        My = y + off if x + off <= yb else yb
         square = Box.from_array([mx, my, Mx, My])
         line1 = draw.line(square.x0, square.y0, square.x1, square.y1)
         line2 = draw.line(square.x1, square.y0, square.x0, square.y1)

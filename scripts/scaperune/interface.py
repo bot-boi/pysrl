@@ -29,6 +29,7 @@ class Mainscreen(Box):
     pass
 
 
+# a box over minimap area with mask
 class Minimap(Box):
     def __init__(self, p1: Point, mask: str = './test/minimap-border.png'):
         masked_img = Image.open(mask, alpha_mask=True)
@@ -47,6 +48,7 @@ class Minimap(Box):
     def get_image(self, img: Image) -> Image:
         img = self.get_image_slice(img)
         img.mask = self.mask
+        img.alpha_mask = True
         return img
 
 
@@ -157,11 +159,10 @@ inventory = Inventory(interface_tabs_boxr, inv_button, inv_slots)
 # MINIMAP/COMPASS
 mmap_pos = Point(643, 83)  # center of mmap
 comp_pos = Point(561, 20)  # center of compass
-minimap = Minimap(Point(545, 3))
+minimap = Minimap(Point(550, 4))
 compass = Compass(comp_pos, 15)
 testimg = Image.open(
     '/home/not-here/Projects/pysrl/scripts/scaperune/images/blah.png'
 )
-minimap.debug(testimg).show()
 chatbox = Chatbox.from_array([4, 368, 517, 503])
 mainscreen = Box.from_array([4, 4, 516, 338])
